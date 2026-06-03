@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({ jsxRuntime: "automatic" })],
+  esbuild: { jsx: "automatic" },
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
