@@ -11,6 +11,12 @@ vi.mock("@/lib/data", () => ({
         { horizon: "1m", target_at: "t", central: 65064, lower: 57602, upper: 73493, conf_level: 0.6, p_up: 0.49, confidence_label: "low", band_width_pct: 0.24, drift_adj_bps: -30, vol_mult: 1.2, rationale: "x" },
         { horizon: "1y", target_at: "t", central: 65390, lower: 45086, upper: 94838, conf_level: 0.6, p_up: 0.5, confidence_label: "low", band_width_pct: 0.76, drift_adj_bps: 20, vol_mult: 1.05, rationale: "x" },
       ],
+      signals: [
+        { source: "fng", signal: "fear_greed", value: 11, delta: -12, interpretation: "Extreme Fear", observed_at: "" },
+      ],
+      news: [
+        { title: "Bitmine ETH loss widens", url: "https://x.com/a", source: "CoinDesk", published_at: "2026-06-03T20:00:00+00:00" },
+      ],
     },
     history: { "1w": [], "1m": [], "1y": [] },
     scores: { "1w": { n: 0 }, "1m": { n: 0 }, "1y": { n: 0 } },
@@ -19,12 +25,16 @@ vi.mock("@/lib/data", () => ({
 }));
 
 describe("Dashboard page", () => {
-  it("renders the three horizon cards and the rationale after load", async () => {
+  it("renders cards, signals, news and a LIVE indicator after load", async () => {
     render(<Page />);
     await waitFor(() => expect(screen.getAllByText("1 Week").length).toBeGreaterThan(0));
     expect(screen.getAllByText("1 Month").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1 Year").length).toBeGreaterThan(0);
     expect(screen.getByText(/Extreme Fear drives caution/)).toBeInTheDocument();
     expect(screen.getAllByText(/insufficient data/i).length).toBe(3);
+    // new live elements
+    expect(screen.getByText("Fear & Greed")).toBeInTheDocument();
+    expect(screen.getByText(/Bitmine ETH loss widens/)).toBeInTheDocument();
+    expect(screen.getByText(/LIVE/)).toBeInTheDocument();
   });
 });
