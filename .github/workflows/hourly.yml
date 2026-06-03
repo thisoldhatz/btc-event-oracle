@@ -1,0 +1,66 @@
+name: hourly-forecast
+
+on:
+  schedule:
+    - cron: "9 * * * *"      # ~hourly (GitHub cron is best-effort, may drift a few min)
+  workflow_dispatch: {}        # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write              # to update the 'state' branch (forecast-history db)
+
+concurrency:
+  group: hourly-forecast
+  cancel-in-progress: false
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -q --upgrade pip
+          pip install -q -r requirements.txt
+          pip install -q -e .
+          pip install -q paramiko
+
+      - name: Restore forecast-history db (from 'state' branch)
+        run: |
+          mkdir -p state public_html/btc/data
+          if git fetch origin state 2>/dev/null; then
+            git show origin/state:oracle.db > state/oracle.db && echo "restored prior db" || echo "no db on state branch yet"
+          else
+            echo "no state branch yet -- starting fresh"
+          fi
+
+      - name: Run the hourly forecast
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DB_PATH: ./state/oracle.db
+          SNAPSHOT_DIR: ./public_html/btc/data
+        run: python -m btc_oracle.cli run
+
+      - name: Push snapshots to cPanel host (SFTP)
+        env:
+          SSH_HOST: ${{ secrets.SFTP_HOST }}
+          SSH_PORT: ${{ secrets.SFTP_PORT }}
+          SSH_USER: ${{ secrets.SFTP_USER }}
+          SSH_PASS: ${{ secrets.SFTP_PASS }}
+        run: python deploy/sftp_upload.py public_html/btc/data public_html/btc/data
+
+      - name: Save forecast-history db (single-commit 'state' branch, no history bloat)
+        run: |
+          git config user.name "btc-oracle-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp state/oracle.db "$RUNNER_TEMP/oracle.db"
+          git checkout --orphan state-new
+          git reset
+          cp "$RUNNER_TEMP/oracle.db" oracle.db
+          git add -f oracle.db
+          git commit -q -m "forecast-history @ $(date -u +%FT%TZ)"
+          git push -f origin state-new:state
