@@ -1,0 +1,36 @@
+# --- Secrets: NEVER commit ---
+.env
+.env.*
+*.secret
+credentials*.json
+cpanel*.txt
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Data / source-of-truth (generated, not versioned) ---
+*.db
+*.sqlite
+*.sqlite3
+data/*.json
+public_html/data/*.json
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+.vercel/
+npm-debug.log*
+
+# --- Brainstorm companion (local only) ---
+.superpowers/
+
+# --- Misc ---
+*.log
+.DS_Store
