@@ -1,4 +1,6 @@
+import json
 import sqlite3
+import uuid
 from pathlib import Path
 
 SCHEMA = """
@@ -95,3 +97,40 @@ def get_closes(conn, source: str, interval: str, limit: int | None = None) -> li
     ).fetchall()
     closes = [r["close"] for r in rows]
     return closes[-limit:] if limit else closes
+
+
+def _uid() -> str:
+    return uuid.uuid4().hex
+
+
+def insert_run(conn, *, run_at, spot_at_issue, spot_source, model_id,
+               prompt_version, engine_version, llm_applied) -> str:
+    run_id = _uid()
+    conn.execute(
+        "INSERT INTO runs (run_id, run_at, spot_at_issue, spot_source, "
+        "engine_version, prompt_version, model_id, llm_applied) VALUES (?,?,?,?,?,?,?,?)",
+        (run_id, run_at, spot_at_issue, spot_source, engine_version,
+         prompt_version, model_id, int(bool(llm_applied))),
+    )
+    conn.commit()
+    return run_id
+
+
+def insert_event(conn, e) -> str:
+    event_id = _uid()
+    conn.execute(
+        "INSERT INTO events (event_id, observed_at, source, signal, value, delta, "
+        "interpretation, headline, url, sentiment, raw) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        (event_id, e.observed_at, e.source, e.signal, e.value, e.delta,
+         e.interpretation, e.headline, e.url, e.sentiment, json.dumps(e.raw)),
+    )
+    conn.commit()
+    return event_id
+
+
+def link_forecast_event(conn, forecast_id: str, event_id: str) -> None:
+    conn.execute(
+        "INSERT OR IGNORE INTO forecast_events (forecast_id, event_id) VALUES (?,?)",
+        (forecast_id, event_id),
+    )
+    conn.commit()
