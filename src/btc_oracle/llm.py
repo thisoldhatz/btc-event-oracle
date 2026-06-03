@@ -24,3 +24,25 @@ def build_user_prompt(baselines, condensed_events) -> str:
     lines.append(condensed_events)
     lines.append("\nReturn the bounded adjustment JSON now.")
     return "\n".join(lines)
+
+
+DEFAULT_MODEL = "claude-sonnet-4-6"
+
+
+def make_claude_call(api_key: str, model: str = DEFAULT_MODEL):
+    """Build a callable(system, user) -> str that calls Claude with prompt
+    caching on the static system prompt. The SDK is imported lazily so the rest
+    of the engine (and tests) never require it at import time."""
+    from anthropic import Anthropic
+    client = Anthropic(api_key=api_key)
+
+    def _call(system: str, user: str) -> str:
+        resp = client.messages.create(
+            model=model,
+            max_tokens=1024,
+            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+            messages=[{"role": "user", "content": user}],
+        )
+        return "".join(block.text for block in resp.content if getattr(block, "type", "") == "text")
+
+    return _call
