@@ -1,7 +1,8 @@
 # tests/test_baseline.py
 import math
 from statistics import NormalDist
-from btc_oracle.baseline import baseline_forecast
+from btc_oracle.baseline import baseline_forecast, build_baseline_forecasts
+from btc_oracle.types import HORIZONS
 
 
 def test_zero_drift_centers_on_spot_and_p_up_half():
@@ -35,3 +36,14 @@ def test_positive_drift_pushes_p_up_above_half():
                           horizon_days=365, mu_daily=0.0005, conf_level=0.60)
     assert f.p_up > 0.5
     assert f.central > 100.0
+
+
+def test_build_returns_one_forecast_per_horizon_widening():
+    fs = build_baseline_forecasts(spot=60000.0, sigma_daily=0.03)
+    assert [f.horizon for f in fs] == list(HORIZONS.keys())
+    widths = [(f.upper - f.lower) for f in fs]
+    # longer horizon -> wider band (sqrt-time)
+    assert widths[0] < widths[1] < widths[2]
+    for f in fs:
+        assert f.lower < f.central < f.upper
+        assert 0.0 < f.p_up < 1.0

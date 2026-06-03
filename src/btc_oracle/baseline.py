@@ -26,3 +26,19 @@ def baseline_forecast(
         lower=lower, upper=upper, conf_level=conf_level, p_up=p_up,
         mu_h=mu_h, sigma_h=sigma_h, vol_model=vol_model, vol_window=vol_window,
     )
+
+
+def build_baseline_forecasts(
+    *, spot: float, sigma_daily: float, mu_daily: float = 0.0,
+    conf_level: float = 0.60, vol_model: str = "ewma", vol_window: int = 0,
+) -> list[BaselineForecast]:
+    """One BaselineForecast per horizon in HORIZONS."""
+    from .types import HORIZONS
+    return [
+        baseline_forecast(
+            spot=spot, sigma_daily=sigma_daily, horizon=h, horizon_days=days,
+            mu_daily=mu_daily, conf_level=conf_level,
+            vol_model=vol_model, vol_window=vol_window,
+        )
+        for h, days in HORIZONS.items()
+    ]
