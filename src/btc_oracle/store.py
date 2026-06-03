@@ -211,3 +211,25 @@ def get_scores(conn, horizon: str | None = None):
     if horizon is None:
         return conn.execute("SELECT * FROM scores").fetchall()
     return conn.execute("SELECT * FROM scores WHERE horizon = ?", (horizon,)).fetchall()
+
+
+def get_timeline(conn, limit: int = 72):
+    """Run-level history (the 1w forecast represents direction), newest first."""
+    return conn.execute(
+        "SELECT r.run_at, r.llm_applied, f.p_up, f.central, f.drift_adj_bps, f.vol_mult, "
+        "f.confidence_label, f.rationale FROM runs r JOIN forecasts f ON f.run_id = r.run_id "
+        "WHERE f.horizon = '1w' ORDER BY r.run_at DESC LIMIT ?",
+        (limit,),
+    ).fetchall()
+
+
+def get_results(conn, limit: int = 30):
+    """Resolved forecasts with predicted (central/band/p_up + spot at issue) and actual
+    (realized price, up outcome, coverage), newest-resolved first."""
+    return conn.execute(
+        "SELECT s.horizon, s.realized_price, s.up_outcome, s.covered, s.resolved_at, "
+        "r.run_at, r.spot_at_issue, f.target_at, f.central, f.lower, f.upper, f.p_up "
+        "FROM scores s JOIN forecasts f ON f.forecast_id = s.forecast_id "
+        "JOIN runs r ON r.run_id = f.run_id ORDER BY s.resolved_at DESC LIMIT ?",
+        (limit,),
+    ).fetchall()
