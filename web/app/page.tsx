@@ -53,7 +53,7 @@ export default function Page() {
 
           <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sortForecasts(latest.forecasts).map((f) => (
-              <HorizonCard key={f.horizon} f={f} />
+              <HorizonCard key={f.horizon} f={f} now={now} />
             ))}
           </section>
 

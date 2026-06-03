@@ -12,7 +12,7 @@ const f: Forecast = {
 
 describe("HorizonCard", () => {
   it("shows the horizon label, central, range and P(up)", () => {
-    render(<HorizonCard f={f} />);
+    render(<HorizonCard f={f} now={0} />);
     expect(screen.getByText("1 Week")).toBeInTheDocument();
     expect(screen.getByText("$65,162")).toBeInTheDocument();
     expect(screen.getByText(/\$61,589/)).toBeInTheDocument();
