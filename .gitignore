@@ -3,6 +3,8 @@
 .env.*
 !.env.example
 *.secret
+*.local.md
+deploy/notes.local.md
 credentials*.json
 cpanel*.txt
 
