@@ -1,50 +1,150 @@
 {
-  "run_at": "2026-06-03T20:08:21.972762+00:00",
-  "spot": 65260.0,
+  "run_at": "2026-06-03T21:25:09.198953+00:00",
+  "spot": 65452.0,
   "llm_applied": true,
   "model_id": "claude-sonnet-4-6",
   "forecasts": [
     {
       "horizon": "1m",
-      "target_at": "2026-07-03T20:08:21.972762+00:00",
-      "central": 65064.51337655012,
-      "lower": 57602.33582615471,
-      "upper": 73493.38946433959,
+      "target_at": "2026-07-03T21:25:09.198953+00:00",
+      "central": 65255.93823968677,
+      "lower": 57771.80638206371,
+      "upper": 73709.61273705111,
       "conf_level": 0.6,
       "p_up": 0.4917317811625907,
       "confidence_label": "low",
-      "band_width_pct": 0.24350373334638184,
+      "band_width_pct": 0.24350373334638206,
       "drift_adj_bps": -30.0,
       "vol_mult": 1.2,
-      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals deeply negative near-term sentiment and potential forced selling, warranting modest negative drift adjustments and vol expansion at the 1w and 1m horizons; however, historically extreme fear readings are contrarian buy signals at longer horizons, so the 1y drift is nudged slightly positive. Funding rates are mildly positive (longs pay shorts) but near neutral, suggesting no extreme leverage overhang. Elevated open interest combined with extreme fear raises liquidation-cascade risk, justifying the vol multiplier increases. All adjustments are kept small given the near-random-walk nature of BTC price at these horizons."
+      "rationale": "Extreme Fear at 11/100 (down 12 from prior) signals sharp sentiment deterioration and historically elevated short-term downside risk, warranting modest negative drift adjustments and vol band widening across all horizons; funding rates remain modestly positive (longs paying shorts) indicating residual crowded-long positioning that could accelerate liquidation cascades on further weakness, adding a small negative skew; however, extreme fear readings can also mark capitulation bottoms, limiting the magnitude of directional adjustments and keeping p_up_override null \u2014 uncertainty is expressed primarily through wider bands rather than a strong directional call."
     },
     {
       "horizon": "1w",
-      "target_at": "2026-06-10T20:08:21.972762+00:00",
-      "central": 65162.183380805014,
-      "lower": 61589.30733609315,
-      "upper": 68942.32662469505,
+      "target_at": "2026-06-10T21:25:09.198953+00:00",
+      "central": 65353.89559669705,
+      "lower": 61770.50787254013,
+      "upper": 69145.16031626632,
       "conf_level": 0.6,
       "p_up": 0.4910695817507632,
       "confidence_label": "low",
-      "band_width_pct": 0.11267268293904228,
+      "band_width_pct": 0.1126726829390422,
       "drift_adj_bps": -15.0,
       "vol_mult": 1.15,
-      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals deeply negative near-term sentiment and potential forced selling, warranting modest negative drift adjustments and vol expansion at the 1w and 1m horizons; however, historically extreme fear readings are contrarian buy signals at longer horizons, so the 1y drift is nudged slightly positive. Funding rates are mildly positive (longs pay shorts) but near neutral, suggesting no extreme leverage overhang. Elevated open interest combined with extreme fear raises liquidation-cascade risk, justifying the vol multiplier increases. All adjustments are kept small given the near-random-walk nature of BTC price at these horizons."
+      "rationale": "Extreme Fear at 11/100 (down 12 from prior) signals sharp sentiment deterioration and historically elevated short-term downside risk, warranting modest negative drift adjustments and vol band widening across all horizons; funding rates remain modestly positive (longs paying shorts) indicating residual crowded-long positioning that could accelerate liquidation cascades on further weakness, adding a small negative skew; however, extreme fear readings can also mark capitulation bottoms, limiting the magnitude of directional adjustments and keeping p_up_override null \u2014 uncertainty is expressed primarily through wider bands rather than a strong directional call."
     },
     {
       "horizon": "1y",
-      "target_at": "2027-06-03T20:08:21.972762+00:00",
-      "central": 65390.65060705686,
-      "lower": 45086.74717167104,
-      "upper": 94838.00573444,
+      "target_at": "2027-06-03T21:25:09.198953+00:00",
+      "central": 65321.22681677429,
+      "lower": 44248.513464291435,
+      "upper": 96429.51454836628,
       "conf_level": 0.6,
-      "p_up": 0.5018061609850847,
+      "p_up": 0.4982759367182476,
       "confidence_label": "low",
-      "band_width_pct": 0.7623545596501525,
-      "drift_adj_bps": 20.0,
-      "vol_mult": 1.05,
-      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals deeply negative near-term sentiment and potential forced selling, warranting modest negative drift adjustments and vol expansion at the 1w and 1m horizons; however, historically extreme fear readings are contrarian buy signals at longer horizons, so the 1y drift is nudged slightly positive. Funding rates are mildly positive (longs pay shorts) but near neutral, suggesting no extreme leverage overhang. Elevated open interest combined with extreme fear raises liquidation-cascade risk, justifying the vol multiplier increases. All adjustments are kept small given the near-random-walk nature of BTC price at these horizons."
+      "band_width_pct": 0.7972407425911331,
+      "drift_adj_bps": -20.0,
+      "vol_mult": 1.1,
+      "rationale": "Extreme Fear at 11/100 (down 12 from prior) signals sharp sentiment deterioration and historically elevated short-term downside risk, warranting modest negative drift adjustments and vol band widening across all horizons; funding rates remain modestly positive (longs paying shorts) indicating residual crowded-long positioning that could accelerate liquidation cascades on further weakness, adding a small negative skew; however, extreme fear readings can also mark capitulation bottoms, limiting the magnitude of directional adjustments and keeping p_up_override null \u2014 uncertainty is expressed primarily through wider bands rather than a strong directional call."
+    }
+  ],
+  "signals": [
+    {
+      "source": "fng",
+      "signal": "fear_greed",
+      "value": 11.0,
+      "delta": -12.0,
+      "interpretation": "Fear & Greed 11/100 (Extreme Fear), -12 vs prior reading",
+      "observed_at": "2026-06-03T00:00:00+00:00"
+    },
+    {
+      "source": "funding",
+      "signal": "funding_rate",
+      "value": 8.14e-05,
+      "delta": null,
+      "interpretation": "Perp funding +0.0081% \u2014 longs pay shorts (crowded long)",
+      "observed_at": "2026-06-03T16:00:00+00:00"
+    },
+    {
+      "source": "oi",
+      "signal": "open_interest",
+      "value": 58472.864,
+      "delta": null,
+      "interpretation": "BTC perp open interest 58,473 contracts",
+      "observed_at": "2026-06-03T21:00:00+00:00"
+    }
+  ],
+  "news": [
+    {
+      "title": "Bitmine's Ethereum bet nears $9 billion loss as ether falls below $1,800",
+      "url": "https://www.coindesk.com/markets/2026/06/03/bitmine-s-ethereum-bet-nears-usd9-billion-loss-as-ether-falls-below-usd1-800",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T20:33:51+00:00"
+    },
+    {
+      "title": "New DeFi entrant widens field of crypto political campaign funds as elections loom",
+      "url": "https://www.coindesk.com/policy/2026/06/03/new-defi-entrant-widens-field-of-crypto-political-campaign-funds-as-elections-loom",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T18:50:05+00:00"
+    },
+    {
+      "title": "Bitcoin isn't crashing because of Saylor, it's losing the momentum trade",
+      "url": "https://www.coindesk.com/markets/2026/06/03/bitcoin-isn-t-crashing-because-of-saylor-it-s-losing-the-momentum-trade",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T18:48:22+00:00"
+    },
+    {
+      "title": "Crypto Long & Short: What about the American consumer?",
+      "url": "https://www.coindesk.com/coindesk-indices/2026/06/03/crypto-long-and-short-what-about-the-american-consumer",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T16:13:51+00:00"
+    },
+    {
+      "title": "Bitcoin copying 2022 'almost perfectly' as trader sees key support failing",
+      "url": "https://cointelegraph.com/markets/bitcoin-copying-2022-almost-perfectly-as-trader-sees-key-support-failing?utm_source=rss_feed&utm_medium=rss_tag_bitcoin&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "published_at": "2026-06-03T16:09:12+00:00"
+    },
+    {
+      "title": "Every single bank will soon need to hold digital assets, says Zodia CEO Julian Sawyer",
+      "url": "https://www.coindesk.com/business/2026/06/03/standard-chartered-buyout-of-zodia-custody-is-great-news-for-crypto-tech-adoption-ceo-says",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T15:08:41+00:00"
+    },
+    {
+      "title": "Rare physical bitcoin worth $1.78 million gets cashed in after 12 years",
+      "url": "https://www.coindesk.com/markets/2026/06/03/rare-physical-bitcoin-worth-usd1-78-million-gets-cashed-in-after-12-years",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T14:32:32+00:00"
+    },
+    {
+      "title": "Bitcoin's dearth of fresh investors matters more than Strategy's sale, Citi says",
+      "url": "https://www.coindesk.com/markets/2026/06/03/bitcoin-s-lack-of-fresh-investors-matters-more-than-strategy-s-sale-citi-says",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T13:29:45+00:00"
+    },
+    {
+      "title": "Bitwise model puts bitcoin fair value at $224,000 as sovereign-default hedge",
+      "url": "https://www.coindesk.com/markets/2026/06/03/bitwise-model-puts-bitcoin-fair-value-at-usd224-000-as-sovereign-default-hedge",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T13:26:02+00:00"
+    },
+    {
+      "title": "CoinDesk 20 performance update: Bitcoin Cash (BCH) falls 10.7%, leading index lower",
+      "url": "https://www.coindesk.com/coindesk-indices/2026/06/03/coindesk-20-performance-update-bitcoin-cash-bch-falls-10-7-leading-index-lower",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T13:08:59+00:00"
+    },
+    {
+      "title": "Kraken parent Payward plans to offer tokenized IPO access as investors await blockbuster debuts",
+      "url": "https://www.coindesk.com/business/2026/06/03/kraken-parent-payward-plans-to-offer-tokenized-ipo-access-as-investors-await-blockbuster-debuts",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T13:02:26+00:00"
+    },
+    {
+      "title": "IREN adds 4% premarket as company unveils 800MW Australian AI data center campus",
+      "url": "https://www.coindesk.com/markets/2026/06/03/iren-adds-4-premarket-as-company-unveils-800mw-australian-ai-data-center-campus",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T13:01:01+00:00"
     }
   ]
 }
