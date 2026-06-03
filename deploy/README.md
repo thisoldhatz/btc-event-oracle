@@ -16,9 +16,9 @@ The site is split in two:
    | Secret | Value |
    |---|---|
    | `ANTHROPIC_API_KEY` | your Anthropic API key (used only server-side, never shipped to browsers) |
-   | `SFTP_HOST` | `premium115.web-hosting.com` |
-   | `SFTP_PORT` | `21098` |
-   | `SFTP_USER` | `vadyfnoc` |
+   | `SFTP_HOST` | your cPanel host (e.g. `serverNNN.web-hosting.com`) |
+   | `SFTP_PORT` | your SSH/SFTP port (Namecheap default `21098`) |
+   | `SFTP_USER` | your cPanel username |
    | `SFTP_PASS` | the cPanel/SSH password |
 
 3. Run the workflow once manually: **Actions → hourly-forecast → Run workflow**. After it succeeds,
