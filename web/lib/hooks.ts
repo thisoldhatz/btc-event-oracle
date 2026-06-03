@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type { Latest, History, Scores } from "./types";
+import type { Latest, History, Scores, Extras } from "./types";
 import { fetchSnapshots, fetchLiveSpot } from "./data";
 
 export type Dir = "up" | "down" | "flat";
@@ -40,6 +40,7 @@ export interface LiveData {
   latest: Latest | null;
   history: History | null;
   scores: Scores | null;
+  extras: Extras | null;
   error: string | null;
   updatedAt: number | null;
 }
@@ -47,15 +48,15 @@ export interface LiveData {
 /** Fetch the snapshots on mount and re-fetch every `ms` so new hourly runs appear. */
 export function useLiveData(ms = 60_000): LiveData {
   const [data, setData] = useState<LiveData>({
-    latest: null, history: null, scores: null, error: null, updatedAt: null,
+    latest: null, history: null, scores: null, extras: null, error: null, updatedAt: null,
   });
   useEffect(() => {
     let alive = true;
     const load = async () => {
       try {
-        const { latest, history, scores } = await fetchSnapshots();
+        const { latest, history, scores, extras } = await fetchSnapshots();
         if (!alive) return;
-        setData({ latest, history, scores, error: null, updatedAt: Date.now() });
+        setData({ latest, history, scores, extras, error: null, updatedAt: Date.now() });
       } catch (e) {
         if (alive) setData((d) => ({ ...d, error: String(e) }));
       }

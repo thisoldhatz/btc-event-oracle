@@ -69,3 +69,16 @@ describe("signalDisplay", () => {
     expect(d.tone).toBe("neutral");
   });
 });
+
+import { timeUntil } from "@/lib/format";
+describe("timeUntil", () => {
+  const now = Date.parse("2026-06-03T00:00:00Z");
+  it("formats days/hours and minutes", () => {
+    expect(timeUntil("2026-06-08T03:00:00Z", now)).toBe("5d 3h");
+    expect(timeUntil("2026-06-03T02:30:00Z", now)).toBe("2h 30m");
+    expect(timeUntil("2026-06-03T00:20:00Z", now)).toBe("20m");
+  });
+  it("says resolved once past", () => {
+    expect(timeUntil("2026-06-02T00:00:00Z", now)).toBe("resolved");
+  });
+});

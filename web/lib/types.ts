@@ -56,3 +56,31 @@ export interface NewsItem {
   source: string;
   published_at: string;
 }
+
+export interface TimelineItem {
+  run_at: string;
+  p_up: number;
+  central: number;
+  drift_adj_bps: number;
+  vol_mult: number;
+  confidence_label: string;
+  llm_applied: boolean;
+  rationale: string;
+}
+export interface ResultItem {
+  horizon: Horizon;
+  run_at: string;
+  target_at: string;
+  central: number;
+  lower: number;
+  upper: number;
+  p_up: number;
+  spot_at_issue: number;
+  realized_price: number;
+  up_outcome: number;
+  covered: boolean | null;
+}
+export interface Extras {
+  timeline: TimelineItem[];
+  results: ResultItem[];
+}

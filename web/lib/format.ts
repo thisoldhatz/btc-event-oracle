@@ -54,6 +54,19 @@ export function relativeTime(iso: string, now: number = Date.now()): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+export function timeUntil(targetIso: string, now: number = Date.now()): string {
+  const t = Date.parse(targetIso);
+  if (Number.isNaN(t)) return "";
+  const s = Math.floor((t - now) / 1000);
+  if (s <= 0) return "resolved";
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
 export type SignalTone = "fear" | "greed" | "up" | "down" | "neutral";
 export interface SignalDisplay {
   label: string;
