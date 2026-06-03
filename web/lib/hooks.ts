@@ -75,18 +75,23 @@ export function useLiveData(ms = 60_000): LiveData {
 export function useCountUp(target: number | null, ms = 600): number | null {
   const [val, setVal] = useState<number | null>(target);
   const fromRef = useRef<number | null>(target);
+  const valRef = useRef<number | null>(target);
   useEffect(() => {
     if (target === null) return;
-    const from = fromRef.current ?? target;
+    // Snapshot the current displayed value so mid-animation interruptions start
+    // from the current visual position rather than the stale animation origin.
+    const from = valRef.current ?? fromRef.current ?? target;
+    fromRef.current = target;
     if (from === target) { setVal(target); return; }
     let raf = 0;
     const start = performance.now();
     const tick = (t: number) => {
       const p = Math.min(1, (t - start) / ms);
       const eased = 1 - Math.pow(1 - p, 3);
-      setVal(from + (target - from) * eased);
+      const next = from + (target - from) * eased;
+      valRef.current = next;
+      setVal(next);
       if (p < 1) raf = requestAnimationFrame(tick);
-      else fromRef.current = target;
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
