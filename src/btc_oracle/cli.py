@@ -29,6 +29,11 @@ def _httpx_get(url, params, headers):
     return httpx.get(url, params=params, headers=headers, timeout=20).json()
 
 
+def _httpx_get_text(url):
+    return httpx.get(url, headers={"User-Agent": "Mozilla/5.0 btc-oracle"},
+                     timeout=20, follow_redirects=True).text
+
+
 def _noop_claude(system, user):
     # Used when no API key is configured: forces the honest baseline-only path.
     raise RuntimeError("no LLM configured")
@@ -69,18 +74,22 @@ def run_cycle(conn, settings, *, now_iso, spot, http_get, claude_call):
 
 
 def cmd_run(settings):
+    from .run_hourly import run_once
+    from .events.news import fetch_news, news_to_dict
     conn = connect(settings.db_path)
     init_schema(conn)
-    # keep price history fresh for vol + resolution
     backfill(conn, ccxt.coinbase(), source="coinbase", symbol="BTC/USD", timeframe="1d")
     spot = fetch_spot(_httpx_get, demo_key=settings.coingecko_demo_key)
     claude_call = (make_claude_call(settings.anthropic_api_key)
                    if settings.anthropic_api_key else None)
+    model_id = "claude-sonnet-4-6" if settings.anthropic_api_key else "baseline-only"
+    news = news_to_dict(fetch_news(_httpx_get_text))
     now_iso = datetime.now(timezone.utc).isoformat()
-    summary = run_cycle(conn, settings, now_iso=now_iso, spot=spot,
-                        http_get=_httpx_get, claude_call=claude_call)
+    summary = run_once(conn, settings, now_iso=now_iso, spot=spot, http_get=_httpx_get,
+                       claude_call=claude_call, out_dir=settings.snapshot_dir,
+                       model_id=model_id, news=news)
     print(f"run {summary['run_id'][:8]}: forecasts={summary['forecasts']} "
-          f"events={summary['events']} resolved={summary['resolved']} "
+          f"events={summary['events']} news={summary['news']} resolved={summary['resolved']} "
           f"llm_applied={summary['llm_applied']} -> {settings.snapshot_dir}")
 
 
