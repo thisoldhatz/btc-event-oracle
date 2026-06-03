@@ -1,50 +1,50 @@
 {
-  "run_at": "2026-06-03T21:25:09.198953+00:00",
-  "spot": 65452.0,
+  "run_at": "2026-06-03T22:50:36.111350+00:00",
+  "spot": 64891.0,
   "llm_applied": true,
   "model_id": "claude-sonnet-4-6",
   "forecasts": [
     {
       "horizon": "1m",
-      "target_at": "2026-07-03T21:25:09.198953+00:00",
-      "central": 65255.93823968677,
-      "lower": 57771.80638206371,
-      "upper": 73709.61273705111,
+      "target_at": "2026-07-03T22:50:36.111350+00:00",
+      "central": 64696.618717709374,
+      "lower": 57276.634601517086,
+      "upper": 73077.83536209716,
       "conf_level": 0.6,
       "p_up": 0.4917317811625907,
       "confidence_label": "low",
-      "band_width_pct": 0.24350373334638206,
+      "band_width_pct": 0.243503733346382,
       "drift_adj_bps": -30.0,
       "vol_mult": 1.2,
-      "rationale": "Extreme Fear at 11/100 (down 12 from prior) signals sharp sentiment deterioration and historically elevated short-term downside risk, warranting modest negative drift adjustments and vol band widening across all horizons; funding rates remain modestly positive (longs paying shorts) indicating residual crowded-long positioning that could accelerate liquidation cascades on further weakness, adding a small negative skew; however, extreme fear readings can also mark capitulation bottoms, limiting the magnitude of directional adjustments and keeping p_up_override null \u2014 uncertainty is expressed primarily through wider bands rather than a strong directional call."
+      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulation-adjacent sentiment, historically a mild contrarian positive but also consistent with continued selling pressure in the near term; funding rates are near neutral (0.01%) indicating the crowded-long concern is minimal; with sentiment this depressed, downside skew and modest volatility widening are warranted across all horizons, but adjustments remain small given near-random-walk dynamics and the possibility that extreme fear marks a local bottom."
     },
     {
       "horizon": "1w",
-      "target_at": "2026-06-10T21:25:09.198953+00:00",
-      "central": 65353.89559669705,
-      "lower": 61770.50787254013,
-      "upper": 69145.16031626632,
+      "target_at": "2026-06-10T22:50:36.111350+00:00",
+      "central": 64793.736465887494,
+      "lower": 61241.062555109114,
+      "upper": 68552.5056237065,
       "conf_level": 0.6,
       "p_up": 0.4910695817507632,
       "confidence_label": "low",
-      "band_width_pct": 0.1126726829390422,
+      "band_width_pct": 0.11267268293904217,
       "drift_adj_bps": -15.0,
       "vol_mult": 1.15,
-      "rationale": "Extreme Fear at 11/100 (down 12 from prior) signals sharp sentiment deterioration and historically elevated short-term downside risk, warranting modest negative drift adjustments and vol band widening across all horizons; funding rates remain modestly positive (longs paying shorts) indicating residual crowded-long positioning that could accelerate liquidation cascades on further weakness, adding a small negative skew; however, extreme fear readings can also mark capitulation bottoms, limiting the magnitude of directional adjustments and keeping p_up_override null \u2014 uncertainty is expressed primarily through wider bands rather than a strong directional call."
+      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulation-adjacent sentiment, historically a mild contrarian positive but also consistent with continued selling pressure in the near term; funding rates are near neutral (0.01%) indicating the crowded-long concern is minimal; with sentiment this depressed, downside skew and modest volatility widening are warranted across all horizons, but adjustments remain small given near-random-walk dynamics and the possibility that extreme fear marks a local bottom."
     },
     {
       "horizon": "1y",
-      "target_at": "2027-06-03T21:25:09.198953+00:00",
-      "central": 65321.22681677429,
-      "lower": 44248.513464291435,
-      "upper": 96429.51454836628,
+      "target_at": "2027-06-03T22:50:36.111350+00:00",
+      "central": 64761.34769552191,
+      "lower": 43869.25208108744,
+      "upper": 95603.00110856866,
       "conf_level": 0.6,
       "p_up": 0.4982759367182476,
       "confidence_label": "low",
       "band_width_pct": 0.7972407425911331,
       "drift_adj_bps": -20.0,
       "vol_mult": 1.1,
-      "rationale": "Extreme Fear at 11/100 (down 12 from prior) signals sharp sentiment deterioration and historically elevated short-term downside risk, warranting modest negative drift adjustments and vol band widening across all horizons; funding rates remain modestly positive (longs paying shorts) indicating residual crowded-long positioning that could accelerate liquidation cascades on further weakness, adding a small negative skew; however, extreme fear readings can also mark capitulation bottoms, limiting the magnitude of directional adjustments and keeping p_up_override null \u2014 uncertainty is expressed primarily through wider bands rather than a strong directional call."
+      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulation-adjacent sentiment, historically a mild contrarian positive but also consistent with continued selling pressure in the near term; funding rates are near neutral (0.01%) indicating the crowded-long concern is minimal; with sentiment this depressed, downside skew and modest volatility widening are warranted across all horizons, but adjustments remain small given near-random-walk dynamics and the possibility that extreme fear marks a local bottom."
     }
   ],
   "signals": [
@@ -59,21 +59,39 @@
     {
       "source": "funding",
       "signal": "funding_rate",
-      "value": 8.14e-05,
+      "value": 0.0001,
       "delta": null,
-      "interpretation": "Perp funding +0.0081% \u2014 longs pay shorts (crowded long)",
-      "observed_at": "2026-06-03T16:00:00+00:00"
+      "interpretation": "Perp funding +0.0100% \u2014 longs pay shorts (crowded long)",
+      "observed_at": "2026-06-04T00:00:00+00:00"
     },
     {
       "source": "oi",
       "signal": "open_interest",
-      "value": 58472.864,
+      "value": 7544.675369077285,
       "delta": null,
-      "interpretation": "BTC perp open interest 58,473 contracts",
-      "observed_at": "2026-06-03T21:00:00+00:00"
+      "interpretation": "BTC perp open interest 7,545 BTC",
+      "observed_at": "2026-06-03T22:50:38.389000+00:00"
     }
   ],
   "news": [
+    {
+      "title": "SpaceX targets record $75 billion IPO as bitcoin treasury and liquidity risks draw focus",
+      "url": "https://www.coindesk.com/markets/2026/06/03/spacex-targets-record-usd75-billion-ipo-as-bitcoin-treasury-and-liquidity-risks-draw-focus",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T22:31:12+00:00"
+    },
+    {
+      "title": "Tom Lee's Bitmine borrows a page from Saylor's playbook to offer 9.5% yield in preferred stocks",
+      "url": "https://www.coindesk.com/business/2026/06/03/tom-lee-s-bitmine-to-offer-preferred-stock-with-9-5-dividend-seeking-to-raise-usd300-million",
+      "source": "CoinDesk",
+      "published_at": "2026-06-03T22:18:53+00:00"
+    },
+    {
+      "title": "Price predictions 6/3: BTC, ETH, BNB, XRP, SOL, HYPE, DOGE, ZEC, ADA, XLM",
+      "url": "https://cointelegraph.com/markets/price-predictions-63-btc-eth-bnb-xrp-sol-hype-doge-zec-ada-xlm?utm_source=rss_feed&utm_medium=rss_tag_bitcoin&utm_campaign=rss_partner_inbound",
+      "source": "Cointelegraph",
+      "published_at": "2026-06-03T21:05:56+00:00"
+    },
     {
       "title": "Bitmine's Ethereum bet nears $9 billion loss as ether falls below $1,800",
       "url": "https://www.coindesk.com/markets/2026/06/03/bitmine-s-ethereum-bet-nears-usd9-billion-loss-as-ether-falls-below-usd1-800",
@@ -127,24 +145,6 @@
       "url": "https://www.coindesk.com/markets/2026/06/03/bitwise-model-puts-bitcoin-fair-value-at-usd224-000-as-sovereign-default-hedge",
       "source": "CoinDesk",
       "published_at": "2026-06-03T13:26:02+00:00"
-    },
-    {
-      "title": "CoinDesk 20 performance update: Bitcoin Cash (BCH) falls 10.7%, leading index lower",
-      "url": "https://www.coindesk.com/coindesk-indices/2026/06/03/coindesk-20-performance-update-bitcoin-cash-bch-falls-10-7-leading-index-lower",
-      "source": "CoinDesk",
-      "published_at": "2026-06-03T13:08:59+00:00"
-    },
-    {
-      "title": "Kraken parent Payward plans to offer tokenized IPO access as investors await blockbuster debuts",
-      "url": "https://www.coindesk.com/business/2026/06/03/kraken-parent-payward-plans-to-offer-tokenized-ipo-access-as-investors-await-blockbuster-debuts",
-      "source": "CoinDesk",
-      "published_at": "2026-06-03T13:02:26+00:00"
-    },
-    {
-      "title": "IREN adds 4% premarket as company unveils 800MW Australian AI data center campus",
-      "url": "https://www.coindesk.com/markets/2026/06/03/iren-adds-4-premarket-as-company-unveils-800mw-australian-ai-data-center-campus",
-      "source": "CoinDesk",
-      "published_at": "2026-06-03T13:01:01+00:00"
     }
   ]
 }

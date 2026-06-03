@@ -1,0 +1,115 @@
+{
+  "timeline": [
+    {
+      "run_at": "2026-06-03T22:50:36.111350+00:00",
+      "p_up": 0.4910695817507632,
+      "central": 64793.736465887494,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulation-adjacent sentiment, historically a mild contrarian positive but also consistent with continued selling pressure in the near term; funding rates are near neutral (0.01%) indicating the crowded-long concern is minimal; with sentiment this depressed, downside skew and modest volatility widening are warranted across all horizons, but adjustments remain small given near-random-walk dynamics and the possibility that extreme fear marks a local bottom."
+    },
+    {
+      "run_at": "2026-06-03T22:49:22.172600+00:00",
+      "p_up": 0.4910695817507632,
+      "central": 64728.83389279905,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear at 11/100 (down 12 points) is a historically oversold contrarian signal but also confirms near-term selling pressure and sentiment deterioration; near-neutral funding (+0.01%) suggests the leveraged long overhang is not extreme, reducing crash-liquidation tail risk slightly, while OI at ~7,544 BTC is moderate and not alarming. Net effect: modest negative drift adjustments across all horizons reflecting weak sentiment momentum, with volatility bands widened to account for elevated fear-driven unpredictability, and a mild negative skew reflecting asymmetric downside risk in the short term; no p_up override given the contradictory mean-reversion potential of extreme fear readings."
+    },
+    {
+      "run_at": "2026-06-03T22:26:04.326115+00:00",
+      "p_up": 0.4880935491607411,
+      "central": 65007.854189192745,
+      "drift_adj_bps": -20.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear (F&G=11, down 12 points) historically marks capitulation zones, applying modest negative drift near-term as selling pressure persists, while widening volatility bands to reflect elevated uncertainty; funding rate is nearly flat (+0.01%) so no significant crowding signal despite the reading nominally showing longs pay shorts; over the 1-year horizon, extreme fear readings have historically been contrarian buy signals warranting a small positive drift adjustment, but the near-term path is tilted slightly negative with elevated vol across all horizons."
+    },
+    {
+      "run_at": "2026-06-03T22:07:33.716978+00:00",
+      "p_up": 0.4910695817507632,
+      "central": 65420.79517203438,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear reading of 11 (sharply down 12 pts) signals acute short-term capitulation risk and elevated realized volatility, justifying modest negative drift and band-widening for 1w and 1m horizons; however, historically extreme fear levels are mean-reverting contrarian signals over longer horizons, supporting a small positive 1y drift nudge. Funding rates remain lightly positive (longs paying shorts) suggesting mild crowding that reinforces near-term downside skew, but the magnitude is too small to override the near-random-walk prior materially. All adjustments are kept well within caps given the inherently noisy near-term BTC price process."
+    },
+    {
+      "run_at": "2026-06-03T21:58:36.931673+00:00",
+      "p_up": 0.4880935491607411,
+      "central": 65460.94709658771,
+      "drift_adj_bps": -20.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear (11/100, down 12 points) signals heavy capitulation and elevated near-term downside risk, justifying a modest negative drift tilt and vol expansion at 1w/1m horizons; however, historically extreme fear readings are contrarian bullish at longer horizons, so the 1y drift receives a small positive nudge. Funding remains mildly positive (longs still paying) suggesting residual long crowding that could accelerate any flush, supporting slightly negative short-term skew and wider bands rather than large central-estimate moves given near-random-walk priors."
+    },
+    {
+      "run_at": "2026-06-03T21:48:03.234215+00:00",
+      "p_up": 0.44,
+      "central": 65337.19484875296,
+      "drift_adj_bps": -20.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear at 11/100 (down 12 points) combined with sharply more negative news tone (-2.19 vs -1.14 prior) suggests near-term bearish sentiment pressure, warranting modest negative drift adjustments and elevated volatility across all horizons; however, funding rates remain only mildly positive (0.0081%), indicating crowded longs that could be liquidated but not yet at extreme levels, so adjustments are kept small per near-random-walk discipline, with vol_mult widened modestly to capture event risk rather than aggressively moving the central estimate."
+    },
+    {
+      "run_at": "2026-06-03T21:25:09.198953+00:00",
+      "p_up": 0.4910695817507632,
+      "central": 65353.89559669705,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear at 11/100 (down 12 from prior) signals sharp sentiment deterioration and historically elevated short-term downside risk, warranting modest negative drift adjustments and vol band widening across all horizons; funding rates remain modestly positive (longs paying shorts) indicating residual crowded-long positioning that could accelerate liquidation cascades on further weakness, adding a small negative skew; however, extreme fear readings can also mark capitulation bottoms, limiting the magnitude of directional adjustments and keeping p_up_override null \u2014 uncertainty is expressed primarily through wider bands rather than a strong directional call."
+    },
+    {
+      "run_at": "2026-06-03T21:23:08.503341+00:00",
+      "p_up": 0.4880935491607411,
+      "central": 65315.23880478228,
+      "drift_adj_bps": -20.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals strong near-term bearish sentiment and elevated downside risk, warranting modest negative drift adjustments and volatility band widening for 1w and 1m horizons; however, historically extreme fear levels are mean-reverting contrarian signals over longer horizons, supporting a small positive drift tilt for 1y. Funding rates remain mildly positive (longs still paying shorts), suggesting some residual long crowding that could accelerate deleveraging if price dips, reinforcing short-term caution. Adjustments are kept small given the near-random-walk nature of BTC at all horizons."
+    },
+    {
+      "run_at": "2026-06-03T20:56:10.992397+00:00",
+      "p_up": 0.4910695817507632,
+      "central": 64814.704989500686,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulatory sentiment that historically precedes near-term continued selling pressure or at minimum elevated volatility, justifying a mild negative drift adjustment and volatility widening for 1w and 1m horizons; the slightly positive perp funding rate (longs still pay shorts, though modestly) suggests residual crowded longs that could flush further on short horizons, reinforcing the downside skew; however, extreme fear readings at this depth are contrarian bullish on the 1-year horizon, motivating a small positive drift adjustment there, while overall vol multipliers are raised across all horizons to reflect elevated uncertainty rather than making large directional bets."
+    },
+    {
+      "run_at": "2026-06-03T20:08:21.972762+00:00",
+      "p_up": 0.4910695817507632,
+      "central": 65162.183380805014,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals deeply negative near-term sentiment and potential forced selling, warranting modest negative drift adjustments and vol expansion at the 1w and 1m horizons; however, historically extreme fear readings are contrarian buy signals at longer horizons, so the 1y drift is nudged slightly positive. Funding rates are mildly positive (longs pay shorts) but near neutral, suggesting no extreme leverage overhang. Elevated open interest combined with extreme fear raises liquidation-cascade risk, justifying the vol multiplier increases. All adjustments are kept small given the near-random-walk nature of BTC price at these horizons."
+    },
+    {
+      "run_at": "2026-06-03T20:02:59.861280+00:00",
+      "p_up": 0.5,
+      "central": 65311.0,
+      "drift_adj_bps": 0.0,
+      "vol_mult": 1.0,
+      "confidence_label": "low",
+      "llm_applied": false,
+      "rationale": "Baseline only \u2014 LLM adjustment unavailable this run."
+    }
+  ],
+  "results": []
+}
