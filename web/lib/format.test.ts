@@ -28,3 +28,44 @@ describe("format", () => {
     expect(HORIZON_LABEL["1y"]).toBe("1 Year");
   });
 });
+
+import { relativeTime, signalDisplay } from "@/lib/format";
+import type { Signal } from "@/lib/types";
+
+describe("relativeTime", () => {
+  const now = Date.parse("2026-06-03T21:00:00Z");
+  it("formats recent times", () => {
+    expect(relativeTime("2026-06-03T20:59:30+00:00", now)).toBe("just now");
+    expect(relativeTime("2026-06-03T20:45:00+00:00", now)).toBe("15m ago");
+    expect(relativeTime("2026-06-03T18:00:00+00:00", now)).toBe("3h ago");
+  });
+  it("handles empty/invalid", () => {
+    expect(relativeTime("", now)).toBe("");
+  });
+});
+
+describe("signalDisplay", () => {
+  const mk = (signal: string, value: number | null, delta: number | null, interp = ""): Signal =>
+    ({ source: "x", signal, value, delta, interpretation: interp, observed_at: "" });
+  it("formats fear & greed with a fear tone", () => {
+    const d = signalDisplay(mk("fear_greed", 11, -12, "Extreme Fear"));
+    expect(d.label).toBe("Fear & Greed");
+    expect(d.value).toBe("11/100");
+    expect(d.tone).toBe("fear");
+  });
+  it("formats funding as a signed percent", () => {
+    const d = signalDisplay(mk("funding_rate", 0.0000814, null));
+    expect(d.label).toBe("Perp funding");
+    expect(d.value).toBe("+0.0081%");
+    expect(d.tone).toBe("up");
+  });
+  it("formats open interest with separators", () => {
+    const d = signalDisplay(mk("open_interest", 58472.86, null));
+    expect(d.value).toBe("58,473");
+  });
+  it("falls back for unknown signals", () => {
+    const d = signalDisplay(mk("mystery", 5, null, "hmm"));
+    expect(d.label).toBe("mystery");
+    expect(d.tone).toBe("neutral");
+  });
+});

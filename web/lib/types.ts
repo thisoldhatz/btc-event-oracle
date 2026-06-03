@@ -20,6 +20,8 @@ export interface Latest {
   llm_applied: boolean;
   model_id: string | null;
   forecasts: Forecast[];
+  signals?: Signal[];
+  news?: NewsItem[];
 }
 export interface HistPoint {
   run_at: string;
@@ -39,3 +41,18 @@ export interface ScoreH {
   coverage?: number;
 }
 export type Scores = Record<Horizon, ScoreH>;
+
+export interface Signal {
+  source: string;
+  signal: string;
+  value: number | null;
+  delta: number | null;
+  interpretation: string;
+  observed_at: string;
+}
+export interface NewsItem {
+  title: string;
+  url: string;
+  source: string;
+  published_at: string;
+}
