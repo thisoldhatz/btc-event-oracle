@@ -1,5 +1,6 @@
 # src/btc_oracle/cli.py
 import argparse
+from datetime import datetime, timezone
 
 import ccxt
 import httpx
@@ -59,6 +60,30 @@ def cmd_preview(settings):
     print(f"rationale: {rationale}")
 
 
+def run_cycle(conn, settings, *, now_iso, spot, http_get, claude_call):
+    """Injectable core of the hourly run (no global state / network)."""
+    from .run_hourly import run_once
+    model_id = "claude-sonnet-4-6" if settings.anthropic_api_key else "baseline-only"
+    return run_once(conn, settings, now_iso=now_iso, spot=spot, http_get=http_get,
+                    claude_call=claude_call, out_dir=settings.snapshot_dir, model_id=model_id)
+
+
+def cmd_run(settings):
+    conn = connect(settings.db_path)
+    init_schema(conn)
+    # keep price history fresh for vol + resolution
+    backfill(conn, ccxt.coinbase(), source="coinbase", symbol="BTC/USD", timeframe="1d")
+    spot = fetch_spot(_httpx_get, demo_key=settings.coingecko_demo_key)
+    claude_call = (make_claude_call(settings.anthropic_api_key)
+                   if settings.anthropic_api_key else None)
+    now_iso = datetime.now(timezone.utc).isoformat()
+    summary = run_cycle(conn, settings, now_iso=now_iso, spot=spot,
+                        http_get=_httpx_get, claude_call=claude_call)
+    print(f"run {summary['run_id'][:8]}: forecasts={summary['forecasts']} "
+          f"events={summary['events']} resolved={summary['resolved']} "
+          f"llm_applied={summary['llm_applied']} -> {settings.snapshot_dir}")
+
+
 def cmd_backfill(settings):
     conn = connect(settings.db_path)
     init_schema(conn)
@@ -82,9 +107,11 @@ def main(argv=None):
     sub.add_parser("backfill", help="ingest BTC daily history")
     sub.add_parser("baseline", help="print current baseline forecasts")
     sub.add_parser("preview", help="print event-aware (overlay) forecasts")
+    sub.add_parser("run", help="full hourly cycle: forecast -> persist -> resolve -> snapshot")
     args = p.parse_args(argv)
     settings = get_settings()
-    {"backfill": cmd_backfill, "baseline": cmd_baseline, "preview": cmd_preview}[args.cmd](settings)
+    {"backfill": cmd_backfill, "baseline": cmd_baseline,
+     "preview": cmd_preview, "run": cmd_run}[args.cmd](settings)
 
 
 if __name__ == "__main__":
