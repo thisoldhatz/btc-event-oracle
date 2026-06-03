@@ -20,3 +20,11 @@ def test_env_overrides(monkeypatch):
     assert s.db_path == "/tmp/x.db"
     assert s.conf_level == 0.8
     assert s.vol_lambda == 0.97
+
+
+def test_snapshot_dir_default_and_override(monkeypatch):
+    from btc_oracle.config import get_settings
+    monkeypatch.delenv("SNAPSHOT_DIR", raising=False)
+    assert get_settings().snapshot_dir == "./public_html/data"
+    monkeypatch.setenv("SNAPSHOT_DIR", "/srv/data")
+    assert get_settings().snapshot_dir == "/srv/data"

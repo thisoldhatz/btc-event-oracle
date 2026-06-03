@@ -13,6 +13,7 @@ class Settings:
     mu_daily: float
     anthropic_api_key: str | None
     coingecko_demo_key: str | None
+    snapshot_dir: str = "./public_html/data"
 
 
 def get_settings() -> Settings:
@@ -23,4 +24,5 @@ def get_settings() -> Settings:
         mu_daily=float(os.getenv("MU_DAILY", "0.0")),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
         coingecko_demo_key=os.getenv("COINGECKO_DEMO_KEY") or None,
+        snapshot_dir=os.getenv("SNAPSHOT_DIR", "./public_html/data"),
     )
