@@ -1,0 +1,50 @@
+{
+  "run_at": "2026-06-03T20:08:21.972762+00:00",
+  "spot": 65260.0,
+  "llm_applied": true,
+  "model_id": "claude-sonnet-4-6",
+  "forecasts": [
+    {
+      "horizon": "1m",
+      "target_at": "2026-07-03T20:08:21.972762+00:00",
+      "central": 65064.51337655012,
+      "lower": 57602.33582615471,
+      "upper": 73493.38946433959,
+      "conf_level": 0.6,
+      "p_up": 0.4917317811625907,
+      "confidence_label": "low",
+      "band_width_pct": 0.24350373334638184,
+      "drift_adj_bps": -30.0,
+      "vol_mult": 1.2,
+      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals deeply negative near-term sentiment and potential forced selling, warranting modest negative drift adjustments and vol expansion at the 1w and 1m horizons; however, historically extreme fear readings are contrarian buy signals at longer horizons, so the 1y drift is nudged slightly positive. Funding rates are mildly positive (longs pay shorts) but near neutral, suggesting no extreme leverage overhang. Elevated open interest combined with extreme fear raises liquidation-cascade risk, justifying the vol multiplier increases. All adjustments are kept small given the near-random-walk nature of BTC price at these horizons."
+    },
+    {
+      "horizon": "1w",
+      "target_at": "2026-06-10T20:08:21.972762+00:00",
+      "central": 65162.183380805014,
+      "lower": 61589.30733609315,
+      "upper": 68942.32662469505,
+      "conf_level": 0.6,
+      "p_up": 0.4910695817507632,
+      "confidence_label": "low",
+      "band_width_pct": 0.11267268293904228,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals deeply negative near-term sentiment and potential forced selling, warranting modest negative drift adjustments and vol expansion at the 1w and 1m horizons; however, historically extreme fear readings are contrarian buy signals at longer horizons, so the 1y drift is nudged slightly positive. Funding rates are mildly positive (longs pay shorts) but near neutral, suggesting no extreme leverage overhang. Elevated open interest combined with extreme fear raises liquidation-cascade risk, justifying the vol multiplier increases. All adjustments are kept small given the near-random-walk nature of BTC price at these horizons."
+    },
+    {
+      "horizon": "1y",
+      "target_at": "2027-06-03T20:08:21.972762+00:00",
+      "central": 65390.65060705686,
+      "lower": 45086.74717167104,
+      "upper": 94838.00573444,
+      "conf_level": 0.6,
+      "p_up": 0.5018061609850847,
+      "confidence_label": "low",
+      "band_width_pct": 0.7623545596501525,
+      "drift_adj_bps": 20.0,
+      "vol_mult": 1.05,
+      "rationale": "Extreme Fear reading of 11 (down 12 from prior) signals deeply negative near-term sentiment and potential forced selling, warranting modest negative drift adjustments and vol expansion at the 1w and 1m horizons; however, historically extreme fear readings are contrarian buy signals at longer horizons, so the 1y drift is nudged slightly positive. Funding rates are mildly positive (longs pay shorts) but near neutral, suggesting no extreme leverage overhang. Elevated open interest combined with extreme fear raises liquidation-cascade risk, justifying the vol multiplier increases. All adjustments are kept small given the near-random-walk nature of BTC price at these horizons."
+    }
+  ]
+}
