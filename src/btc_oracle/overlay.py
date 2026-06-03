@@ -99,3 +99,25 @@ def apply_overlay(baseline: BaselineForecast, adj: dict, llm_applied: bool) -> E
         drift_adj_bps=float(adj["drift_adj_bps"]), vol_mult=float(adj["vol_mult"]),
         skew_adj=float(adj["skew_adj"]), llm_applied=llm_applied,
     )
+
+
+import json as _json
+
+_NEUTRAL = {"drift_adj_bps": 0.0, "vol_mult": 1.0, "skew_adj": 0.0,
+            "p_up_override": None, "confidence": "low"}
+_FALLBACK_RATIONALE = "Baseline only — LLM adjustment unavailable this run."
+
+
+def run_overlay(baselines, condensed_events, claude_call):
+    """Call the (injected) Claude function, clamp + apply its adjustment, and
+    fall back to the untouched baseline on ANY failure. Returns
+    (list[EnrichedForecast], rationale, llm_applied)."""
+    from .llm import SYSTEM_PROMPT, build_user_prompt  # local import: avoids needing the SDK in math tests
+    try:
+        raw = claude_call(SYSTEM_PROMPT, build_user_prompt(baselines, condensed_events))
+        adj = parse_and_clamp(_json.loads(raw))
+        forecasts = [apply_overlay(b, adj["horizons"][b.horizon], llm_applied=True) for b in baselines]
+        return forecasts, adj["rationale"] or "", True
+    except Exception:
+        forecasts = [apply_overlay(b, dict(_NEUTRAL), llm_applied=False) for b in baselines]
+        return forecasts, _FALLBACK_RATIONALE, False

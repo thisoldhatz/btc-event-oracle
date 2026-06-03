@@ -88,3 +88,52 @@ def test_p_up_override_within_bounds_wins():
            "p_up_override": 0.65, "confidence": "high"}
     f = apply_overlay(b, adj, llm_applied=True)
     assert abs(f.p_up - 0.65) < 1e-9
+
+
+# --- Task 8: run_overlay tests ---
+import json
+from btc_oracle.baseline import build_baseline_forecasts
+from btc_oracle.overlay import run_overlay
+
+
+def _baselines():
+    return build_baseline_forecasts(spot=60000.0, sigma_daily=0.03)
+
+
+def test_run_overlay_success_applies_and_flags_true():
+    payload = {"horizons": {
+        "1w": {"drift_adj_bps": 50, "vol_mult": 1.2, "skew_adj": 0.0, "p_up_override": None, "confidence": "medium"},
+        "1m": {"drift_adj_bps": 0, "vol_mult": 1.0, "skew_adj": 0.0, "p_up_override": None, "confidence": "medium"},
+        "1y": {"drift_adj_bps": 0, "vol_mult": 1.0, "skew_adj": 0.0, "p_up_override": None, "confidence": "low"},
+    }, "rationale": "crowded longs", "event_refs": ["evt1"]}
+    def fake_claude(system, user):
+        return json.dumps(payload)
+    forecasts, rationale, applied = run_overlay(_baselines(), "events...", fake_claude)
+    assert applied is True
+    assert rationale == "crowded longs"
+    f1w = next(f for f in forecasts if f.horizon == "1w")
+    assert f1w.vol_mult == 1.2 and f1w.drift_adj_bps == 50
+
+
+def test_run_overlay_falls_back_on_exception():
+    def boom(system, user):
+        raise RuntimeError("API down")
+    forecasts, rationale, applied = run_overlay(_baselines(), "events", boom)
+    assert applied is False
+    for f in forecasts:
+        assert f.vol_mult == 1.0 and f.drift_adj_bps == 0.0  # untouched baseline
+    assert "baseline" in rationale.lower()
+
+
+def test_run_overlay_falls_back_on_bad_json():
+    def junk(system, user):
+        return "not json at all"
+    _, _, applied = run_overlay(_baselines(), "events", junk)
+    assert applied is False
+
+
+def test_run_overlay_falls_back_on_invalid_structure():
+    def missing(system, user):
+        return json.dumps({"horizons": {"1w": {"vol_mult": 1.0}}})  # missing 1m/1y
+    _, _, applied = run_overlay(_baselines(), "events", missing)
+    assert applied is False
