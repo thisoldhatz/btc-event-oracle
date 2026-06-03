@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Area, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend,
 } from "recharts";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 import type { History, Horizon } from "@/lib/types";
 import { toBandSeries, mergeActual } from "@/lib/chart";
 import { fetchActualPrices } from "@/lib/data";
@@ -50,10 +51,10 @@ export function ForecastChart({ history }: { history: History }) {
               <YAxis tickFormatter={(v) => fmtUsd(v)} stroke="#52525b" fontSize={11} width={64} domain={["auto", "auto"]} />
               <Tooltip contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8 }}
                 labelFormatter={(t) => new Date(t as number).toLocaleString()}
-                formatter={(v: number, name) => [fmtUsd(v), name]} />
+                formatter={(v: ValueType, name) => [typeof v === "number" ? fmtUsd(v) : "—", name]} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area name="forecast range" dataKey="lower" stackId="band" stroke="none" fill="transparent" isAnimationActive={false} legendType="none" connectNulls />
-              <Area name="forecast range" dataKey="band" stackId="band" stroke="none" fill="#f7931a" fillOpacity={0.13} isAnimationActive={false} connectNulls />
+              <Area name="forecast band (lower)" dataKey="lower" stackId="band" stroke="none" fill="transparent" isAnimationActive={false} legendType="none" connectNulls />
+              <Area name="forecast range" dataKey="band" stackId="band" stroke="none" fill="#f7931a" fillOpacity={0.13} isAnimationActive={false} legendType="none" connectNulls />
               <Line name="forecast" dataKey="central" stroke="#f7931a" dot={false} strokeWidth={2} isAnimationActive={false} connectNulls />
               <Line name="actual BTC" dataKey="actual" stroke="#60a5fa" dot={false} strokeWidth={2} isAnimationActive={false} connectNulls />
             </ComposedChart>

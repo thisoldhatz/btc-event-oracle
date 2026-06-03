@@ -22,6 +22,7 @@ vi.mock("@/lib/data", () => ({
     scores: { "1w": { n: 0 }, "1m": { n: 0 }, "1y": { n: 0 } },
   })),
   fetchLiveSpot: vi.fn(async () => 65300),
+  fetchActualPrices: vi.fn(async () => []),
 }));
 
 describe("Dashboard page", () => {
