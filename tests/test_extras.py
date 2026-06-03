@@ -53,3 +53,26 @@ def test_get_results_returns_resolved_with_predicted_and_actual(mem_db):
 def test_empty_when_nothing(mem_db):
     assert get_timeline(mem_db) == []
     assert get_results(mem_db) == []
+
+
+# Task 2 tests
+import json
+from btc_oracle.snapshots import build_extras, write_snapshots
+
+
+def test_build_extras_shapes(mem_db):
+    _seed_run(mem_db, "2026-06-03T21:00:00+00:00", 65000.0, p_up=0.55, rationale="why")
+    extras = build_extras(mem_db)
+    assert set(extras.keys()) == {"timeline", "results"}
+    assert extras["timeline"][0]["rationale"] == "why"
+    assert extras["timeline"][0]["llm_applied"] is True
+    assert extras["results"] == []        # nothing resolved
+
+
+def test_write_snapshots_emits_extras_json(mem_db, tmp_path):
+    _seed_run(mem_db, "2026-06-03T21:00:00+00:00", 65000.0)
+    written = write_snapshots(mem_db, str(tmp_path))
+    assert "extras.json" in written
+    data = json.loads((tmp_path / "extras.json").read_text())
+    assert "timeline" in data and "results" in data
+    assert len(data["timeline"]) == 1

@@ -2,7 +2,8 @@
 import json
 import os
 from .types import HORIZONS
-from .store import (get_latest_run, get_forecasts_for_run, get_forecast_history, get_scores)
+from .store import (get_latest_run, get_forecasts_for_run, get_forecast_history, get_scores,
+                    get_timeline, get_results)
 
 _F_KEYS = ("horizon", "target_at", "central", "lower", "upper", "conf_level",
            "p_up", "confidence_label", "band_width_pct", "drift_adj_bps",
@@ -58,12 +59,32 @@ def build_scores(conn) -> dict:
     return out
 
 
+def build_extras(conn) -> dict:
+    timeline = [
+        {"run_at": x["run_at"], "p_up": x["p_up"], "central": x["central"],
+         "drift_adj_bps": x["drift_adj_bps"], "vol_mult": x["vol_mult"],
+         "confidence_label": x["confidence_label"], "llm_applied": bool(x["llm_applied"]),
+         "rationale": x["rationale"]}
+        for x in get_timeline(conn)
+    ]
+    results = [
+        {"horizon": x["horizon"], "run_at": x["run_at"], "target_at": x["target_at"],
+         "central": x["central"], "lower": x["lower"], "upper": x["upper"], "p_up": x["p_up"],
+         "spot_at_issue": x["spot_at_issue"], "realized_price": x["realized_price"],
+         "up_outcome": x["up_outcome"],
+         "covered": (bool(x["covered"]) if x["covered"] is not None else None)}
+        for x in get_results(conn)
+    ]
+    return {"timeline": timeline, "results": results}
+
+
 def write_snapshots(conn, out_dir: str, signals: list | None = None,
                     news: list | None = None) -> list[str]:
     os.makedirs(out_dir, exist_ok=True)
     payloads = {"latest.json": build_latest(conn, signals=signals, news=news),
                 "history.json": build_history(conn),
-                "scores.json": build_scores(conn)}
+                "scores.json": build_scores(conn),
+                "extras.json": build_extras(conn)}
     for name, payload in payloads.items():
         with open(os.path.join(out_dir, name), "w", encoding="utf-8") as fh:
             json.dump(payload, fh, indent=2)
