@@ -1,4 +1,7 @@
-from .types import HORIZONS
+import math
+from dataclasses import dataclass
+from statistics import NormalDist
+from .types import HORIZONS, BaselineForecast
 
 DRIFT_CAP_BPS = {"1w": 50.0, "1m": 150.0, "1y": 100.0}   # spec §14 #6
 VOL_MULT_BOUNDS = (0.8, 1.5)
@@ -41,3 +44,58 @@ def parse_and_clamp(payload) -> dict:
     return {"horizons": out,
             "rationale": str(payload.get("rationale", "")),
             "event_refs": list(payload.get("event_refs", []))}
+
+
+_ND = NormalDist()
+
+
+@dataclass(frozen=True)
+class EnrichedForecast:
+    horizon: str
+    horizon_days: int
+    spot: float
+    central: float
+    lower: float
+    upper: float
+    conf_level: float
+    p_up: float
+    mu_h: float
+    sigma_h: float
+    confidence_label: str
+    band_width_pct: float
+    vol_model: str
+    vol_window: int
+    baseline_central: float
+    baseline_p_up: float
+    baseline_sigma_h: float
+    drift_adj_bps: float
+    vol_mult: float
+    skew_adj: float
+    llm_applied: bool
+
+
+def apply_overlay(baseline: BaselineForecast, adj: dict, llm_applied: bool) -> EnrichedForecast:
+    """Apply a single clamped horizon adjustment to a baseline forecast.
+    MVP applies drift + vol only; skew_adj is recorded but not yet applied."""
+    mu2 = baseline.mu_h + float(adj["drift_adj_bps"]) / 10_000.0
+    sigma2 = baseline.sigma_h * float(adj["vol_mult"])
+    central = baseline.spot * math.exp(mu2)
+    z = _ND.inv_cdf((1 + baseline.conf_level) / 2)
+    lower = baseline.spot * math.exp(mu2 - z * sigma2)
+    upper = baseline.spot * math.exp(mu2 + z * sigma2)
+    p_up = _ND.cdf(mu2 / sigma2) if sigma2 > 0 else 0.5
+    override = adj.get("p_up_override")
+    if override is not None:
+        p_up = float(override)
+    p_up = max(PUP_BOUNDS[0], min(PUP_BOUNDS[1], p_up))
+    return EnrichedForecast(
+        horizon=baseline.horizon, horizon_days=baseline.horizon_days, spot=baseline.spot,
+        central=central, lower=lower, upper=upper, conf_level=baseline.conf_level, p_up=p_up,
+        mu_h=mu2, sigma_h=sigma2, confidence_label=adj.get("confidence", "low"),
+        band_width_pct=(upper - lower) / baseline.spot,
+        vol_model=baseline.vol_model, vol_window=baseline.vol_window,
+        baseline_central=baseline.central, baseline_p_up=baseline.p_up,
+        baseline_sigma_h=baseline.sigma_h,
+        drift_adj_bps=float(adj["drift_adj_bps"]), vol_mult=float(adj["vol_mult"]),
+        skew_adj=float(adj["skew_adj"]), llm_applied=llm_applied,
+    )
