@@ -5,36 +5,34 @@ import { sortForecasts } from "@/lib/format";
 import { useLiveData, useLivePrice } from "@/lib/hooks";
 import { Header } from "@/components/Header";
 import { SignalsStrip } from "@/components/SignalsStrip";
+import { FearGreedDial } from "@/components/FearGreedDial";
 import { HorizonCard } from "@/components/HorizonCard";
 import { ForecastChart } from "@/components/ForecastChart";
 import { Scorecard } from "@/components/Scorecard";
 import { RationalePanel } from "@/components/RationalePanel";
+import { RecentCalls } from "@/components/RecentCalls";
+import { MindTimeline } from "@/components/MindTimeline";
 import { NewsFeed } from "@/components/NewsFeed";
 import { Disclaimer } from "@/components/Disclaimer";
 
 export default function Page() {
-  const { latest, history, scores, error, updatedAt } = useLiveData(60_000);
+  const { latest, history, scores, extras, error, updatedAt } = useLiveData(60_000);
   const { price, dir } = useLivePrice(15_000);
-
-  // tick a clock every 15s so "updated Xs ago" / relative times stay fresh
   const [now, setNow] = useState<number>(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 15_000);
     return () => clearInterval(id);
   }, []);
 
+  const fng = latest?.signals?.find((s) => s.signal === "fear_greed");
+  const otherSignals = (latest?.signals ?? []).filter((s) => s.signal !== "fear_greed");
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <Header latest={latest} livePrice={price} dir={dir} updatedAt={updatedAt} now={now} />
 
-      <Link
-        href="/guide/"
-        className="mt-4 flex items-center justify-between rounded-lg border border-[#f7931a]/30 bg-[#f7931a]/10 px-4 py-2.5 text-sm text-zinc-200 transition-colors hover:bg-[#f7931a]/15"
-      >
-        <span>
-          <span className="mr-1.5">👋</span> New here? Read the plain-English guide to what every
-          number on this page means.
-        </span>
+      <Link href="/guide/" className="mt-4 flex items-center justify-between rounded-lg border border-[#f7931a]/30 bg-[#f7931a]/10 px-4 py-2.5 text-sm text-zinc-200 transition-colors hover:bg-[#f7931a]/15">
+        <span><span className="mr-1.5">👋</span> New here? Read the plain-English guide to what every number on this page means.</span>
         <span className="ml-3 shrink-0 text-[#f7931a]">How to read this →</span>
       </Link>
 
@@ -43,13 +41,19 @@ export default function Page() {
           Couldn&apos;t load forecast data ({error}).
         </div>
       )}
-      {!latest && !error && (
-        <div className="mt-10 text-center text-zinc-500">Loading the latest forecast…</div>
-      )}
+      {!latest && !error && <div className="mt-10 text-center text-zinc-500">Loading the latest forecast…</div>}
 
       {latest && (
         <>
-          <SignalsStrip signals={latest.signals ?? []} />
+          <section className="mt-6">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">What the model is watching</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {fng && <FearGreedDial value={fng.value ?? 0} />}
+              <div className={fng ? "sm:col-span-1 lg:col-span-3" : "sm:col-span-2 lg:col-span-4"}>
+                <SignalsStrip signals={otherSignals} />
+              </div>
+            </div>
+          </section>
 
           <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sortForecasts(latest.forecasts).map((f) => (
@@ -63,8 +67,14 @@ export default function Page() {
           </section>
 
           <section className="mt-4 grid gap-4 lg:grid-cols-3">
-            <div className="lg:col-span-2">{scores && <Scorecard scores={scores} />}</div>
-            <NewsFeed news={latest.news ?? []} />
+            <div className="lg:col-span-2 space-y-4">
+              {scores && <Scorecard scores={scores} />}
+              {extras && <RecentCalls results={extras.results} />}
+            </div>
+            <div className="space-y-4">
+              {extras && <MindTimeline timeline={extras.timeline} />}
+              <NewsFeed news={latest.news ?? []} />
+            </div>
           </section>
         </>
       )}

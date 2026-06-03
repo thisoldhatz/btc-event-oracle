@@ -1,23 +1,25 @@
+"use client";
+import { useEffect, useState } from "react";
 import type { Latest } from "@/lib/types";
-import type { Dir } from "@/lib/hooks";
+import { type Dir, useCountUp } from "@/lib/hooks";
 import { fmtUsd, fmtDateTime, relativeTime } from "@/lib/format";
+import { fetchActualPrices } from "@/lib/data";
+import { Sparkline } from "@/components/Sparkline";
 
-const FLASH: Record<Dir, string> = {
-  up: "text-emerald-400",
-  down: "text-rose-400",
-  flat: "text-zinc-50",
-};
+const FLASH: Record<Dir, string> = { up: "text-emerald-400", down: "text-rose-400", flat: "text-zinc-50" };
 
-export function Header({
-  latest, livePrice, dir, updatedAt, now,
-}: {
-  latest: Latest | null;
-  livePrice: number | null;
-  dir: Dir;
-  updatedAt: number | null;
-  now: number;
+export function Header({ latest, livePrice, dir, updatedAt, now }: {
+  latest: Latest | null; livePrice: number | null; dir: Dir; updatedAt: number | null; now: number;
 }) {
   const price = livePrice ?? latest?.spot ?? null;
+  const animated = useCountUp(price);
+  const [spark, setSpark] = useState<number[]>([]);
+  useEffect(() => {
+    let alive = true;
+    fetchActualPrices(1).then((p) => alive && setSpark(p.map((x) => x.price)));
+    return () => { alive = false; };
+  }, []);
+
   return (
     <header className="border-b border-zinc-800 pb-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -29,25 +31,22 @@ export function Header({
             </span>
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-zinc-400">
-            An honest, hourly Bitcoin forecast driven by world events — and held accountable
-            against a random-walk benchmark. Not a crystal ball; a tracked method.
+            An honest, hourly Bitcoin forecast driven by world events — and held accountable against a
+            random-walk benchmark. Not a crystal ball; a tracked method.
           </p>
         </div>
         <div className="text-right">
           <div className="text-xs uppercase tracking-wide text-zinc-500">Live BTC</div>
-          <div className={`text-2xl font-bold tabular-nums transition-colors duration-300 ${FLASH[dir]}`}>
-            {price ? fmtUsd(price) : "—"}
+          <div className="flex items-center justify-end gap-2">
+            <Sparkline points={spark} />
+            <div className={`text-2xl font-bold tabular-nums transition-colors duration-300 ${FLASH[dir]}`}>
+              {animated ? fmtUsd(animated) : "—"}
+            </div>
           </div>
           <div className="mt-1 text-xs text-zinc-500">forecast as of {fmtDateTime(latest?.run_at ?? null)}</div>
           <div className="mt-1 flex items-center justify-end gap-2">
             {updatedAt && <span className="text-[11px] text-zinc-600">updated {relativeTime(new Date(updatedAt).toISOString(), now)}</span>}
-            <span
-              className={`rounded-full border px-2 py-0.5 text-xs ${
-                latest?.llm_applied
-                  ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-300"
-                  : "border-zinc-600/40 bg-zinc-700/20 text-zinc-400"
-              }`}
-            >
+            <span className={`rounded-full border px-2 py-0.5 text-xs ${latest?.llm_applied ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-300" : "border-zinc-600/40 bg-zinc-700/20 text-zinc-400"}`}>
               {latest?.llm_applied ? `Claude overlay (${latest.model_id})` : "baseline only"}
             </span>
           </div>
