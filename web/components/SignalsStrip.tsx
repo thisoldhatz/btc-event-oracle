@@ -13,11 +13,7 @@ const TONE: Record<SignalTone, string> = {
 export function SignalsStrip({ signals }: { signals: Signal[] }) {
   if (!signals || signals.length === 0) return null;
   return (
-    <section className="mt-6">
-      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-        What the model is watching
-      </h2>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {signals.map((s) => {
           const d = signalDisplay(s);
           return (
@@ -36,7 +32,6 @@ export function SignalsStrip({ signals }: { signals: Signal[] }) {
             </div>
           );
         })}
-      </div>
-    </section>
+    </div>
   );
 }

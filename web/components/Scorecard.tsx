@@ -1,6 +1,7 @@
 // components/Scorecard.tsx
 import type { Scores } from "@/lib/types";
 import { buildScoreRows } from "@/lib/scores";
+import { InfoDot } from "@/components/InfoDot";
 
 export function Scorecard({ scores }: { scores: Scores }) {
   const rows = buildScoreRows(scores);
@@ -8,6 +9,7 @@ export function Scorecard({ scores }: { scores: Scores }) {
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
       <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
         Accuracy scorecard <span className="text-zinc-600">· vs. random walk</span>
+        <InfoDot text="Each forecast is graded once it comes due, against a naive 'tomorrow = today' (random walk). Beating that is genuinely hard — tying it is the honest, expected result at short horizons. Brier/MAPE: lower is better; Cover: how often the real price landed in the range." />
       </h3>
       <div className="mt-3 overflow-x-auto">
         <table className="w-full text-sm">
