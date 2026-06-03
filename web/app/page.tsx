@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { sortForecasts } from "@/lib/format";
 import { useLiveData, useLivePrice } from "@/lib/hooks";
 import { Header } from "@/components/Header";
@@ -25,6 +26,17 @@ export default function Page() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <Header latest={latest} livePrice={price} dir={dir} updatedAt={updatedAt} now={now} />
+
+      <Link
+        href="/guide/"
+        className="mt-4 flex items-center justify-between rounded-lg border border-[#f7931a]/30 bg-[#f7931a]/10 px-4 py-2.5 text-sm text-zinc-200 transition-colors hover:bg-[#f7931a]/15"
+      >
+        <span>
+          <span className="mr-1.5">👋</span> New here? Read the plain-English guide to what every
+          number on this page means.
+        </span>
+        <span className="ml-3 shrink-0 text-[#f7931a]">How to read this →</span>
+      </Link>
 
       {error && (
         <div className="mt-6 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
