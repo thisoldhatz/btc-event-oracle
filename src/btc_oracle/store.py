@@ -134,3 +134,21 @@ def link_forecast_event(conn, forecast_id: str, event_id: str) -> None:
         (forecast_id, event_id),
     )
     conn.commit()
+
+
+def insert_forecast(conn, *, run_id, target_at, forecast, rationale, drift_mode) -> str:
+    f = forecast
+    forecast_id = _uid()
+    conn.execute(
+        "INSERT INTO forecasts (forecast_id, run_id, horizon, target_at, central, lower, "
+        "upper, conf_level, p_up, mu_h, sigma_h, confidence_label, band_width_pct, "
+        "baseline_central, baseline_p_up, baseline_sigma_h, vol_model, vol_window, "
+        "drift_mode, drift_adj_bps, vol_mult, skew_adj, rationale, resolved) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)",
+        (forecast_id, run_id, f.horizon, target_at, f.central, f.lower, f.upper,
+         f.conf_level, f.p_up, f.mu_h, f.sigma_h, f.confidence_label, f.band_width_pct,
+         f.baseline_central, f.baseline_p_up, f.baseline_sigma_h, f.vol_model,
+         f.vol_window, drift_mode, f.drift_adj_bps, f.vol_mult, f.skew_adj, rationale),
+    )
+    conn.commit()
+    return forecast_id
