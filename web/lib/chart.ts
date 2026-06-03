@@ -22,3 +22,29 @@ export function toBandSeries(points: HistPoint[]): BandPoint[] {
     p_up: p.p_up,
   }));
 }
+
+export interface MergedPoint {
+  t: number;
+  label: string;
+  lower?: number;
+  band?: number;
+  central?: number;
+  upper?: number;
+  actual?: number;
+}
+
+export function mergeActual(
+  band: BandPoint[],
+  actual: { t: number; price: number }[],
+): MergedPoint[] {
+  const map = new Map<number, MergedPoint>();
+  for (const b of band) {
+    map.set(b.t, { t: b.t, label: b.label, lower: b.lower, band: b.band, central: b.central, upper: b.upper });
+  }
+  for (const a of actual) {
+    const e = map.get(a.t);
+    if (e) e.actual = a.price;
+    else map.set(a.t, { t: a.t, label: new Date(a.t).toISOString(), actual: a.price });
+  }
+  return Array.from(map.values()).sort((x, y) => x.t - y.t);
+}

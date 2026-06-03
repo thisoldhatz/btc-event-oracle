@@ -22,3 +22,19 @@ describe("toBandSeries", () => {
     expect(toBandSeries([])).toEqual([]);
   });
 });
+
+import { mergeActual } from "@/lib/chart";
+describe("mergeActual", () => {
+  it("attaches actual prices and unions timestamps in order", () => {
+    const band = [{ t: 100, label: "a", lower: 1, band: 2, central: 2, upper: 3, p_up: 0.5 }];
+    const actual = [{ t: 100, price: 9 }, { t: 200, price: 10 }];
+    const m = mergeActual(band, actual);
+    expect(m).toHaveLength(2);
+    expect(m[0].t).toBe(100);
+    expect(m[0].actual).toBe(9);
+    expect(m[0].central).toBe(2);
+    expect(m[1].t).toBe(200);
+    expect(m[1].actual).toBe(10);
+    expect(m[1].central).toBeUndefined();   // actual-only point has no forecast fields
+  });
+});
