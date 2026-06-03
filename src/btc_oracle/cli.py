@@ -39,7 +39,7 @@ def cmd_baseline(settings):
     spot = fetch_spot(_httpx_get, demo_key=settings.coingecko_demo_key)
     for f in compute_current_baseline(conn, settings, spot=spot):
         print(f"{f.horizon:>3}: central={f.central:,.0f} "
-              f"[{f.lower:,.0f} – {f.upper:,.0f}] P(up)={f.p_up:.0%}")
+              f"[{f.lower:,.0f} - {f.upper:,.0f}] P(up)={f.p_up:.0%}")
 
 
 def main(argv=None):
