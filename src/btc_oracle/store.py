@@ -152,3 +152,62 @@ def insert_forecast(conn, *, run_id, target_at, forecast, rationale, drift_mode)
     )
     conn.commit()
     return forecast_id
+
+
+def get_unresolved_matured(conn, now_iso: str):
+    return conn.execute(
+        "SELECT f.forecast_id, f.horizon, f.target_at, f.central, f.lower, f.upper, "
+        "f.p_up, r.spot_at_issue FROM forecasts f JOIN runs r ON f.run_id = r.run_id "
+        "WHERE f.resolved = 0 AND f.target_at <= ? ORDER BY f.target_at ASC",
+        (now_iso,),
+    ).fetchall()
+
+
+def get_close_on_or_after(conn, source: str, interval: str, ts_epoch: float):
+    row = conn.execute(
+        "SELECT close FROM price_history WHERE source=? AND interval=? AND ts >= ? "
+        "ORDER BY ts ASC LIMIT 1",
+        (source, interval, ts_epoch),
+    ).fetchone()
+    return row["close"] if row else None
+
+
+def mark_resolved(conn, forecast_id: str) -> None:
+    conn.execute("UPDATE forecasts SET resolved = 1 WHERE forecast_id = ?", (forecast_id,))
+    conn.commit()
+
+
+def insert_score(conn, s: dict) -> None:
+    conn.execute(
+        "INSERT OR REPLACE INTO scores (forecast_id, horizon, resolved_at, realized_price, "
+        "up_outcome, brier, brier_base, bss, crps, crps_rw, ae, ape, mae_ratio, theil_u2, "
+        "pit, covered) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (s["forecast_id"], s["horizon"], s["resolved_at"], s["realized_price"],
+         s["up_outcome"], s["brier"], s["brier_base"], s.get("bss"), s.get("crps"),
+         s.get("crps_rw"), s["ae"], s.get("ape"), s.get("mae_ratio"), s.get("theil_u2"),
+         s.get("pit"), s["covered"]),
+    )
+    conn.commit()
+
+
+def get_latest_run(conn):
+    return conn.execute("SELECT * FROM runs ORDER BY run_at DESC LIMIT 1").fetchone()
+
+
+def get_forecasts_for_run(conn, run_id: str):
+    return conn.execute("SELECT * FROM forecasts WHERE run_id = ?", (run_id,)).fetchall()
+
+
+def get_forecast_history(conn, horizon: str, limit: int = 1000):
+    return conn.execute(
+        "SELECT r.run_at, f.target_at, f.central, f.lower, f.upper, f.p_up "
+        "FROM forecasts f JOIN runs r ON f.run_id = r.run_id WHERE f.horizon = ? "
+        "ORDER BY r.run_at ASC LIMIT ?",
+        (horizon, limit),
+    ).fetchall()
+
+
+def get_scores(conn, horizon: str | None = None):
+    if horizon is None:
+        return conn.execute("SELECT * FROM scores").fetchall()
+    return conn.execute("SELECT * FROM scores WHERE horizon = ?", (horizon,)).fetchall()

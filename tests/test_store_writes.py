@@ -8,6 +8,63 @@ from btc_oracle.baseline import baseline_forecast
 from btc_oracle.overlay import apply_overlay
 
 
+# Task 4 additions
+from btc_oracle.store import (
+    get_unresolved_matured, get_close_on_or_after, mark_resolved, insert_score,
+    get_latest_run, get_forecasts_for_run, get_forecast_history, get_scores,
+    insert_prices,
+)
+
+
+def _seed_forecast(conn, *, run_at, target_at, spot, horizon="1w"):
+    rid = insert_run(conn, run_at=run_at, spot_at_issue=spot, spot_source="cg",
+                     model_id="m", prompt_version="v", engine_version="e", llm_applied=False)
+    f = _enriched()
+    fid = insert_forecast(conn, run_id=rid, target_at=target_at, forecast=f,
+                          rationale="r", drift_mode="zero")
+    return rid, fid
+
+
+def test_get_unresolved_matured_filters_by_time(mem_db):
+    _seed_forecast(mem_db, run_at="2026-06-01T00:00:00+00:00",
+                   target_at="2026-06-08T00:00:00+00:00", spot=65000.0)   # matured
+    _seed_forecast(mem_db, run_at="2026-06-03T00:00:00+00:00",
+                   target_at="2026-07-03T00:00:00+00:00", spot=66000.0)   # future
+    rows = get_unresolved_matured(mem_db, "2026-06-10T00:00:00+00:00")
+    assert len(rows) == 1
+    assert rows[0]["spot_at_issue"] == 65000.0   # joined from runs
+
+
+def test_get_close_on_or_after(mem_db):
+    insert_prices(mem_db, [("coinbase", "1d", 100.0, 0, 0, 0, 10.0, 0),
+                           ("coinbase", "1d", 200.0, 0, 0, 0, 20.0, 0)])
+    assert get_close_on_or_after(mem_db, "coinbase", "1d", 150.0) == 20.0
+    assert get_close_on_or_after(mem_db, "coinbase", "1d", 999.0) is None
+
+
+def test_mark_resolved_and_insert_score(mem_db):
+    _, fid = _seed_forecast(mem_db, run_at="t", target_at="t2", spot=65000.0)
+    insert_score(mem_db, {"forecast_id": fid, "horizon": "1w", "resolved_at": "t3",
+                          "realized_price": 66000.0, "up_outcome": 1, "brier": 0.16,
+                          "brier_base": 0.25, "bss": 0.36, "ae": 1000.0, "ape": 1.5,
+                          "mae_ratio": 1.0, "covered": 1})
+    mark_resolved(mem_db, fid)
+    assert mem_db.execute("SELECT resolved FROM forecasts WHERE forecast_id=?",
+                          (fid,)).fetchone()["resolved"] == 1
+    s = get_scores(mem_db, "1w")
+    assert len(s) == 1 and s[0]["bss"] == 0.36
+
+
+def test_latest_run_and_history(mem_db):
+    _seed_forecast(mem_db, run_at="2026-06-01T00:00:00+00:00", target_at="2026-06-08T00:00:00+00:00", spot=64000.0)
+    _seed_forecast(mem_db, run_at="2026-06-02T00:00:00+00:00", target_at="2026-06-09T00:00:00+00:00", spot=65000.0)
+    assert get_latest_run(mem_db)["spot_at_issue"] == 65000.0   # newest run_at
+    hist = get_forecast_history(mem_db, "1w")
+    assert len(hist) == 2 and hist[0]["run_at"] <= hist[1]["run_at"]  # ascending
+    fr = get_forecasts_for_run(mem_db, get_latest_run(mem_db)["run_id"])
+    assert len(fr) == 1
+
+
 def _enriched():
     b = baseline_forecast(spot=65000.0, sigma_daily=0.03, horizon="1w",
                           horizon_days=7, mu_daily=0.0, conf_level=0.60)
