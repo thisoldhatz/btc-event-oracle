@@ -1,10 +1,11 @@
-from . import fear_greed, bybit, gdelt
+from . import fear_greed, okx, gdelt
 from .base import Event
 
-# (name, callable) — add CoinDesk/marketaux here in later phases
+# (name, callable). OKX is used for funding/OI because it works from data-center
+# IPs (Bybit blocks them); the bybit adapter remains for local/other use.
 _SOURCES = [
     ("fng", fear_greed.fetch),
-    ("bybit", bybit.fetch),
+    ("okx", okx.fetch),
     ("gdelt", gdelt.fetch_tone),
 ]
 

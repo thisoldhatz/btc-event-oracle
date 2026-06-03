@@ -14,9 +14,9 @@ def _http_get(url, params, headers):
     if "alternative.me" in url:
         return {"data": [{"value": "11", "value_classification": "Extreme Fear", "timestamp": "1780444800"}]}
     if "funding" in url:
-        return {"result": {"list": [{"fundingRate": "0.00008", "fundingRateTimestamp": "1780502400000"}]}}
+        return {"code": "0", "data": [{"fundingRate": "0.00008", "fundingTime": "1780502400000"}]}
     if "open-interest" in url:
-        return {"result": {"list": [{"openInterest": "59000", "timestamp": "1780509600000"}]}}
+        return {"code": "0", "data": [{"oi": "7516", "oiCcy": "59000", "ts": "1780509600000"}]}
     if "gdelt" in url:
         return {"timeline": [{"data": [{"date": "20260603T100000Z", "value": 2.0}]}]}
     raise AssertionError(url)

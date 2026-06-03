@@ -1,8 +1,9 @@
 from btc_oracle.events.collect import collect_events
 
 FNG = {"data": [{"value": "11", "value_classification": "Extreme Fear", "timestamp": "1780444800"}]}
-FUNDING = {"result": {"list": [{"fundingRate": "0.00008", "fundingRateTimestamp": "1780502400000"}]}}
-OI = {"result": {"list": [{"openInterest": "59742.9", "timestamp": "1780509600000"}]}}
+# OKX-shaped funding / open-interest responses (collect_events now uses the OKX adapter)
+FUNDING = {"code": "0", "data": [{"instId": "BTC-USD-SWAP", "fundingRate": "0.00008", "fundingTime": "1780502400000"}]}
+OI = {"code": "0", "data": [{"oi": "7516", "oiCcy": "59742.9", "ts": "1780509600000"}]}
 
 
 def test_collect_aggregates_all_sources():
