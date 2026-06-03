@@ -7,7 +7,7 @@ export function Header({ latest, livePrice }: { latest: Latest | null; livePrice
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-zinc-50">
-            <span className="text-[#f7931a]">₿</span> BTC Event Oracle
+            <span aria-hidden="true" className="text-[#f7931a]">₿</span> BTC Event Oracle
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-zinc-400">
             An honest, hourly Bitcoin forecast driven by world events — and held accountable
@@ -17,7 +17,7 @@ export function Header({ latest, livePrice }: { latest: Latest | null; livePrice
         <div className="text-right">
           <div className="text-xs uppercase tracking-wide text-zinc-500">Live BTC</div>
           <div className="text-2xl font-bold text-zinc-50">
-            {livePrice ? fmtUsd(livePrice) : latest?.spot ? fmtUsd(latest.spot) : "—"}
+            {livePrice !== null ? fmtUsd(livePrice) : latest?.spot !== null && latest?.spot !== undefined ? fmtUsd(latest.spot) : "—"}
           </div>
           <div className="mt-1 text-xs text-zinc-500">
             as of {fmtDateTime(latest?.run_at ?? null)}
@@ -30,7 +30,7 @@ export function Header({ latest, livePrice }: { latest: Latest | null; livePrice
                   : "border-zinc-600/40 bg-zinc-700/20 text-zinc-400"
               }`}
             >
-              {latest?.llm_applied ? `Claude overlay (${latest.model_id})` : "baseline only"}
+              {latest?.llm_applied ? `Claude overlay (${latest.model_id ?? 'unknown'})` : "baseline only"}
             </span>
           </div>
         </div>
