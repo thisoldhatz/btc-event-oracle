@@ -13,8 +13,12 @@ def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir, m
     forecasts, rationale, llm_applied, events = build_enriched_forecasts(
         conn, settings, spot=spot, http_get=http_get, claude_call=claude_call)
 
+    # Record the model that ACTUALLY shaped this run. If the overlay fell back to
+    # the baseline (llm_applied=False), the provenance is baseline-only regardless
+    # of whether an API key was configured.
+    stored_model = model_id if llm_applied else "baseline-only"
     run_id = insert_run(conn, run_at=now_iso, spot_at_issue=spot, spot_source="coingecko",
-                        model_id=model_id, prompt_version="v1", engine_version="0.1.0",
+                        model_id=stored_model, prompt_version="v1", engine_version="0.1.0",
                         llm_applied=llm_applied)
     drift_mode = "zero" if settings.mu_daily == 0 else f"mu={settings.mu_daily}"
     event_ids = [insert_event(conn, e) for e in events]

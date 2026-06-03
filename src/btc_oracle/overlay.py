@@ -108,6 +108,20 @@ _NEUTRAL = {"drift_adj_bps": 0.0, "vol_mult": 1.0, "skew_adj": 0.0,
 _FALLBACK_RATIONALE = "Baseline only — LLM adjustment unavailable this run."
 
 
+def _extract_json(text: str) -> str:
+    """Pull the JSON object out of an LLM response that may be wrapped in
+    markdown code fences (```json ... ```) or surrounded by prose. Real Claude
+    output is usually clean, but this makes the overlay robust so a stray fence
+    never silently demotes a good response to the baseline fallback."""
+    if not isinstance(text, str):
+        raise ValueError("LLM response was not text")
+    start = text.find("{")
+    end = text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        raise ValueError("no JSON object found in LLM response")
+    return text[start:end + 1]
+
+
 def run_overlay(baselines, condensed_events, claude_call):
     """Call the (injected) Claude function, clamp + apply its adjustment, and
     fall back to the untouched baseline on ANY failure. Returns
@@ -115,7 +129,7 @@ def run_overlay(baselines, condensed_events, claude_call):
     from .llm import SYSTEM_PROMPT, build_user_prompt  # local import: avoids needing the SDK in math tests
     try:
         raw = claude_call(SYSTEM_PROMPT, build_user_prompt(baselines, condensed_events))
-        adj = parse_and_clamp(_json.loads(raw))
+        adj = parse_and_clamp(_json.loads(_extract_json(raw)))
         forecasts = [apply_overlay(b, adj["horizons"][b.horizon], llm_applied=True) for b in baselines]
         return forecasts, adj["rationale"] or "", True
     except Exception:

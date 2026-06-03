@@ -1,11 +1,14 @@
 # src/btc_oracle/resolve.py
-from datetime import datetime
+from datetime import datetime, timezone
 from .scoring import score_forecast
 from .store import (get_unresolved_matured, get_close_on_or_after, insert_score, mark_resolved)
 
 
 def _iso_to_epoch(iso: str) -> float:
-    return datetime.fromisoformat(iso).timestamp()
+    dt = datetime.fromisoformat(iso)
+    if dt.tzinfo is None:                    # treat naive timestamps as UTC, not local
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.timestamp()
 
 
 def resolve_matured(conn, now_iso: str, source: str = "coinbase", interval: str = "1d") -> list:
