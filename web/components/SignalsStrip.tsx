@@ -1,6 +1,6 @@
 // components/SignalsStrip.tsx
 import type { Signal } from "@/lib/types";
-import { signalDisplay } from "@/lib/format";
+import { signalDisplay, signalStale } from "@/lib/format";
 
 /** "What the model is watching" — a horizontal band of hairline-divided cells
  *  (no boxes). Each cell: a quiet label, a neutral-ink number (color never
@@ -24,6 +24,7 @@ export function SignalsStrip({ signals }: { signals: Signal[] }) {
         const down = d.delta != null && d.delta.startsWith("-");
         const flat = d.delta === "+0" || d.delta === "0";
         const up = d.delta != null && !down && !flat;
+        const st = signalStale(s.observed_at, s.signal);
         return (
           <div
             key={s.source + s.signal}
@@ -33,6 +34,11 @@ export function SignalsStrip({ signals }: { signals: Signal[] }) {
             <div className="flex items-baseline justify-between gap-2">
               <span className="font-body text-[11px] uppercase tracking-wide text-faint">
                 {d.label}
+                {st?.stale && (
+                  <span className="ml-1.5 font-mono text-[10px] text-caution tnum" title={`Last update ~${Math.round(st.ageH)}h ago — older than this signal's normal cadence.`}>
+                    stale {Math.round(st.ageH)}h
+                  </span>
+                )}
               </span>
               {d.delta != null && (
                 <span

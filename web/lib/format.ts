@@ -113,6 +113,28 @@ export function signalDisplay(s: Signal): SignalDisplay {
   }
 }
 
+// Per-signal freshness budgets (hours). A reading older than this is flagged so a
+// stale feed never silently looks as live as a fresh one.
+const SIGNAL_MAX_AGE_H: Record<string, number> = {
+  fear_greed: 36, // daily index
+  funding_rate: 12, // ~8h funding cycle
+  open_interest: 6,
+  implied_vol: 12,
+  news_tone: 72, // GDELT ~3-day window
+};
+
+export function signalStale(
+  observed_at: string,
+  signal: string,
+  now: number = Date.now(),
+): { stale: boolean; ageH: number } | null {
+  if (!observed_at) return null;
+  const t = Date.parse(observed_at);
+  if (Number.isNaN(t)) return null;
+  const ageH = Math.max(0, (now - t) / 3_600_000);
+  return { stale: ageH > (SIGNAL_MAX_AGE_H[signal] ?? 24), ageH };
+}
+
 export function regimeNote(label: string): string {
   if (label === "high") return "High-volatility regime — intervals widened (the model is less reliable in turbulence).";
   if (label === "elevated") return "Elevated volatility — intervals modestly widened.";

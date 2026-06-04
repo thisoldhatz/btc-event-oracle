@@ -1,6 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { fmtUsd, fmtPct, fmtSignedBps, sortForecasts, HORIZON_LABEL } from "@/lib/format";
+import { fmtUsd, fmtPct, fmtSignedBps, sortForecasts, HORIZON_LABEL, signalStale } from "@/lib/format";
 import type { Forecast } from "@/lib/types";
+
+describe("signalStale", () => {
+  const now = Date.parse("2026-06-04T12:00:00Z");
+  it("flags a day-old Fear & Greed reading as fresh but a 2-day-old one as stale", () => {
+    expect(signalStale("2026-06-03T18:00:00Z", "fear_greed", now)!.stale).toBe(false); // 18h < 36h
+    expect(signalStale("2026-06-02T06:00:00Z", "fear_greed", now)!.stale).toBe(true); // 54h > 36h
+  });
+  it("uses a tighter budget for funding and returns null for missing/invalid times", () => {
+    expect(signalStale("2026-06-03T20:00:00Z", "funding_rate", now)!.stale).toBe(true); // 16h > 12h
+    expect(signalStale("", "funding_rate", now)).toBeNull();
+    expect(signalStale("not-a-date", "funding_rate", now)).toBeNull();
+  });
+});
 
 const mk = (horizon: Forecast["horizon"]): Forecast => ({
   horizon, target_at: "", central: 0, lower: 0, upper: 0, conf_level: 0.6,
