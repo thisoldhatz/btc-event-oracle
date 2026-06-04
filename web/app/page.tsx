@@ -19,8 +19,8 @@ import { SkillPanel } from "@/components/SkillPanel";
 import { YourCall } from "@/components/YourCall";
 
 export default function Page() {
-  const { latest, history, scores, extras, error, updatedAt } = useLiveData(60_000);
-  const { price, dir } = useLivePrice(15_000);
+  const { latest, history, scores, extras, error, updatedAt } = useLiveData();
+  const { price, dir } = useLivePrice();
   const [now, setNow] = useState<number>(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 15_000);
@@ -53,7 +53,15 @@ export default function Page() {
 
       {error && (
         <div className="mt-6 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
-          Couldn&apos;t load forecast data ({error}).
+          {error.includes("BLOCKED") ? (
+            <>
+              This device looks temporarily blocked by the host&apos;s firewall, so the live data
+              can&apos;t load. Try again on a different network (e.g. mobile data), or reload in a few
+              minutes — the block usually clears on its own.
+            </>
+          ) : (
+            <>Couldn&apos;t load forecast data ({error}).</>
+          )}
         </div>
       )}
       {!latest && !error && <div className="mt-10 text-center text-zinc-500">Loading the latest forecast…</div>}

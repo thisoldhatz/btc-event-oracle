@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { fetchSnapshots, fetchLiveSpot, fetchActualPrices } from "@/lib/data";
+import { fetchSnapshots, fetchLatest, fetchLiveSpot, fetchActualPrices } from "@/lib/data";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -31,5 +31,14 @@ describe("data", () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ prices: [[1000, 65], [2000, 66]] }) } as Response)));
     const p = await fetchActualPrices(7);
     expect(p).toEqual([{ t: 1000, price: 65 }, { t: 2000, price: 66 }]);
+  });
+
+  it("throws a clear firewall error when the host returns its HTML block page (HTTP 200)", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ok: true,
+      headers: { get: () => "text/html; charset=UTF-8" },
+      json: async () => ({}),
+    } as unknown as Response)));
+    await expect(fetchLatest()).rejects.toThrow(/firewall/i);
   });
 });
