@@ -60,3 +60,47 @@ def test_write_snapshots_emits_three_files(mem_db, tmp_path):
     assert set(written) == {"latest.json", "history.json", "scores.json", "extras.json"}
     data = json.loads((tmp_path / "latest.json").read_text())
     assert data["spot"] == 64000.0
+
+
+# tests/test_snapshots.py  (add)
+from btc_oracle.snapshots import build_scores
+from btc_oracle.store import insert_run, insert_forecast, insert_score
+from btc_oracle.baseline import forecast_from_sigma_h
+
+
+def _resolved(conn, p_up, baseline_p_up, up_outcome, crps=0.02, crps_rw=0.03, covered=1):
+    rid = insert_run(conn, run_at="2026-06-01T00:00:00+00:00", spot_at_issue=65000.0, spot_source="cg",
+                     model_id="m", prompt_version="v", engine_version="e", llm_applied=True)
+    f = forecast_from_sigma_h(spot=65000.0, sigma_h=0.06, horizon="1w", horizon_days=7,
+                              mu_daily=0.0, conf_level=0.60, vol_model="gjr-garch", vol_window=300)
+    fid = insert_forecast(conn, run_id=rid, target_at="t", forecast=f, rationale="r", drift_mode="zero")
+    # overwrite p_up and baseline_p_up so A/B reflects the applied vs baseline probabilities
+    conn.execute("UPDATE forecasts SET p_up=?, baseline_p_up=? WHERE forecast_id=?",
+                 (p_up, baseline_p_up, fid))
+    conn.commit()
+    insert_score(conn, {"forecast_id": fid, "horizon": "1w", "resolved_at": "2026-06-08T00:00:00+00:00",
+                        "realized_price": 66000.0, "up_outcome": up_outcome, "brier": (p_up-up_outcome)**2,
+                        "brier_base": (0.5-up_outcome)**2, "bss": 0.0, "ae": 1000.0, "ape": 1.5,
+                        "mae_ratio": 1.0, "covered": covered, "crps": crps, "crps_rw": crps_rw, "pit": 0.5})
+
+
+def test_build_scores_empty_is_n0(mem_db):
+    out = build_scores(mem_db)
+    assert out["1w"] == {"n": 0} and out["1y"] == {"n": 0}
+
+
+def test_build_scores_rich_aggregate(mem_db):
+    _resolved(mem_db, p_up=0.7, baseline_p_up=0.5, up_outcome=1)
+    _resolved(mem_db, p_up=0.6, baseline_p_up=0.5, up_outcome=1)
+    sc = build_scores(mem_db)["1w"]
+    assert sc["n"] == 2
+    # backward-compatible keys still present
+    for k in ("brier", "brier_base", "bss", "mape", "coverage"):
+        assert k in sc
+    # new keys
+    assert "crps" in sc and "crpss" in sc and "coverage_nominal" in sc
+    assert "reliability" in sc and "resolution" in sc
+    assert "windows" in sc and set(sc["windows"]) == {"all", "last30", "last90"}
+    assert sc["windows"]["all"]["n"] == 2
+    # A/B: model p_up (0.7,0.6) beats baseline (0.5,0.5) when both went up
+    assert sc["ab"]["model_brier"] < sc["ab"]["baseline_brier"]
