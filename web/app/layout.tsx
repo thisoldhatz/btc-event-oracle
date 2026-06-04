@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
+import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+
+// Editorial "Ledger" type system — display serif + UI sans + tabular data mono.
+const display = Fraunces({ subsets: ["latin"], variable: "--font-display", display: "swap" });
+const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-mono", display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://vadym.online"),
@@ -19,10 +27,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport = { width: "device-width", initialScale: 1, themeColor: "#0B0B0E" };
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-zinc-950 antialiased">{children}</body>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+      <body className="min-h-screen bg-base font-body text-ink antialiased">{children}</body>
     </html>
   );
 }
