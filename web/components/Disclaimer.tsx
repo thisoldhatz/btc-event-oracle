@@ -10,17 +10,21 @@ export function Disclaimer() {
       <p className="max-w-measure font-body text-xs leading-relaxed text-faint">
         Not financial advice. Short-horizon Bitcoin is near-random-walk; this is a
         tracked method, not a prediction of certainty.{" "}
-        <Link href="/guide/" className="underline decoration-faint underline-offset-2 transition-colors hover:text-muted">
-          Guide
-        </Link>
-        {" · "}
-        <Link href="/about/" className="underline decoration-faint underline-offset-2 transition-colors hover:text-muted">
-          About
-        </Link>
-        {" · "}
-        <Link href="/disclaimer/" className="underline decoration-faint underline-offset-2 transition-colors hover:text-muted">
-          Full disclaimer
-        </Link>
+        {[
+          ["/guide/", "Guide"],
+          ["/accuracy/", "Accuracy"],
+          ["/methodology/", "Methodology"],
+          ["/about/", "About"],
+          ["/who/", "Who runs this"],
+          ["/disclaimer/", "Full disclaimer"],
+        ].map(([href, label], i) => (
+          <span key={href}>
+            {i > 0 && " · "}
+            <Link href={href} className="underline decoration-faint underline-offset-2 transition-colors hover:text-muted">
+              {label}
+            </Link>
+          </span>
+        ))}
       </p>
     </footer>
   );

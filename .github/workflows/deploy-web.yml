@@ -11,6 +11,8 @@ on:
     paths:
       - "web/**"
       - ".github/workflows/deploy-web.yml"
+  schedule:
+    - cron: "30 5 * * *" # daily rebuild so the SSG'd /accuracy + new /recap pages stay fresh
   workflow_dispatch: {}
 
 concurrency:
@@ -38,6 +40,14 @@ jobs:
       - name: Test (gate the deploy on green tests)
         working-directory: web
         run: npm test
+
+      - name: Refresh SSG data from the live host (fall back to committed fixtures)
+        working-directory: web
+        run: |
+          for f in scores extras seo latest history; do
+            curl -fsS --max-time 25 "https://vadym.online/btc/data/$f.json" -o "public/data/$f.json" \
+              && echo "pulled $f.json" || echo "keeping committed fixture $f.json"
+          done
 
       - name: Build static export (-> web/out)
         working-directory: web
