@@ -95,13 +95,14 @@ python -m http.server 8080 --directory out           # local preview at localhos
   Phase A reliability (multi-source price failover, keep-alive workflow, healthcheck hook, db artifact
   backup, stale banner); Phase B methodology (GJR-GARCH, regime, Deribit DVOL); Phase C scoring
   (CRPS/CRPSS, Brier decomposition, rolling windows, overlay-vs-baseline A/B, Polymarket feed);
-  Phase D dashboard (markets/skill panels, your-call game, About page) + homepage.
+  Phase D dashboard (markets/skill panels, your-call game, About page) + homepage at root;
+  engine-rendered **OG share card** (`og.py`, /btc/data/og.png) + **RSS feed** (`feed.py`, /btc/data/rss.xml).
 - Scorecard/skill/"did it call it" panels show "insufficient data" because the track record is brand new
   — they fill in as forecasts mature (1-year stays "insufficient" for ~a year, by design).
 - **Still open / TODO:** rotate the cPanel password (was shared in chat) then update the `SFTP_PASS`
   GitHub secret; optional `HC_PING_URL` healthchecks.io secret; SSL cert expires **2026-12-18**.
-  Roadmap items NOT yet built: HAR intraday-realized-variance vol, multi-asset (ETH/SOL), engine-rendered
-  OG share images + RSS feed, a Telegram channel.
+  Roadmap items NOT yet built (each a large standalone effort): HAR intraday-realized-variance vol,
+  multi-asset (ETH/SOL), a Telegram channel.
 
 ## Process note
 Built with the `superpowers` skill workflow (brainstorm → spec → plan → subagent-driven TDD), then
