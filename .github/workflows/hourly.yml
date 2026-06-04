@@ -2,7 +2,13 @@ name: hourly-forecast
 
 on:
   schedule:
-    - cron: "9 * * * *"      # ~hourly (GitHub cron is best-effort, may drift a few min)
+    # GitHub's scheduled cron is best-effort and SILENTLY DROPS many runs on
+    # free repos (observed ~every 3-4h instead of hourly). We schedule 3x/hour so
+    # that even when GitHub drops most attempts, fresh data still lands well
+    # inside the dashboard's 90-min "stale" window. The concurrency group below
+    # means overlapping fires don't double-run. (Bulletproof fix: an external
+    # reliable trigger — e.g. a Cloudflare Worker cron — hitting workflow_dispatch.)
+    - cron: "7,27,47 * * * *"
   workflow_dispatch: {}        # lets you run it manually from the Actions tab
 
 permissions:
