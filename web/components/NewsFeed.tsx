@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import type { NewsItem } from "@/lib/types";
 import { relativeTime } from "@/lib/format";
 
+/** A plain dateline list — no cards, no boxes. Source in small mono caps, the
+ *  headline in body type as a quiet link, the published time in mono. Hairline
+ *  rules separate entries. The news is context, never a call to action. */
 export function NewsFeed({ news }: { news: NewsItem[] }) {
   // re-tick relative timestamps every 30s so "Xm ago" stays honest
   const [now, setNow] = useState<number>(() => Date.now());
@@ -11,29 +14,38 @@ export function NewsFeed({ news }: { news: NewsItem[] }) {
     return () => clearInterval(id);
   }, []);
 
+  if (!news || news.length === 0) {
+    return (
+      <p className="max-w-measure font-body text-sm leading-relaxed text-faint">
+        No recent headlines.
+      </p>
+    );
+  }
+
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-        Latest Bitcoin headlines
-      </h3>
-      {(!news || news.length === 0) ? (
-        <p className="mt-3 text-sm text-zinc-600">No headlines right now.</p>
-      ) : (
-        <ul className="mt-3 divide-y divide-zinc-800">
-          {news.map((n, i) => (
-            <li key={n.url + i} className="py-2.5">
-              <a href={n.url} target="_blank" rel="noopener noreferrer"
-                 className="text-sm text-zinc-200 hover:text-[#f7931a]">
-                {n.title}
-              </a>
-              <div className="mt-0.5 text-xs text-zinc-500">
-                {n.source}
-                {n.published_at && <> · {relativeTime(n.published_at, now)}</>}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <ul className="divide-y divide-keyline">
+      {news.map((n, i) => (
+        <li key={n.url + i} className="py-3.5 first:pt-0">
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-faint">
+              {n.source}
+            </span>
+            {n.published_at && (
+              <span className="shrink-0 font-mono text-[10px] text-faint tnum">
+                {relativeTime(n.published_at, now)}
+              </span>
+            )}
+          </div>
+          <a
+            href={n.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 block font-body text-[0.95rem] leading-snug text-ink decoration-accent underline-offset-2 hover:text-accent hover:underline"
+          >
+            {n.title}
+          </a>
+        </li>
+      ))}
+    </ul>
   );
 }

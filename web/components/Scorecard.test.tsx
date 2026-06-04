@@ -17,7 +17,7 @@ describe("Scorecard", () => {
       "1m": { n: 0 }, "1y": { n: 0 },
     } as Scores;
     render(<Scorecard scores={scores} />);
-    expect(screen.getByText(/beating random walk/i)).toBeInTheDocument();
-    expect(screen.getByText("3.1%")).toBeInTheDocument();
+    expect(screen.getByTitle(/beats random walk/i)).toBeInTheDocument();   // zero-axis skill bar
+    expect(screen.getByText("3.1%")).toBeInTheDocument();                  // MAPE
   });
 });

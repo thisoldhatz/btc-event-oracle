@@ -11,6 +11,10 @@ function load(): Call[] {
 }
 function save(calls: Call[]) { localStorage.setItem(KEY, JSON.stringify(calls)); }
 
+/** "Play along" sidebar — a restrained, just-for-fun wager against the model.
+ *  Two keyline buttons (fill only on hover), the model's lean in mono, and a
+ *  resolved tally set like a scoreline. Nothing is sold; nothing leaves the
+ *  browser. KEEPS the existing localStorage game logic verbatim. */
 export function YourCall({ spot, modelPup }: { spot: number | null; modelPup: number | null }) {
   const [calls, setCalls] = useState<Call[]>([]);
   const [prices, setPrices] = useState<{ t: number; price: number }[]>([]);
@@ -27,31 +31,83 @@ export function YourCall({ spot, modelPup }: { spot: number | null; modelPup: nu
   const youHit = resolved.filter((x) => x.r.userRight).length;
   const modelHit = resolved.filter((x) => x.r.modelRight).length;
 
+  const canPlay = spot != null && modelPup !== null;
+  const modelUp = modelPup !== null && modelPup >= 0.5;
+
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">Your call vs. the model</h3>
-      <p className="mt-2 text-sm text-zinc-400">Where do you think BTC is in 1 week — and can you beat the model? (Just for fun, stored only in your browser.)</p>
-      <div className="mt-3 flex gap-2">
-        <button onClick={() => makeCall(true)} className="rounded-md bg-emerald-500/15 px-3 py-1.5 text-sm text-emerald-300 hover:bg-emerald-500/25">▲ Higher</button>
-        <button onClick={() => makeCall(false)} className="rounded-md bg-rose-500/15 px-3 py-1.5 text-sm text-rose-300 hover:bg-rose-500/25">▼ Lower</button>
-        {modelPup !== null && <span className="self-center text-xs text-zinc-500">model leans {modelPup >= 0.5 ? "higher" : "lower"} ({Math.round(modelPup * 100)}%)</span>}
+    <div className="anim-fade-up rounded-md border border-keyline bg-surface p-5">
+      <div className="kicker">Play along</div>
+      <h3 className="mt-2 font-display text-lg leading-snug text-ink">
+        Where is BTC in a week — and can you beat the model?
+      </h3>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => makeCall(true)}
+          disabled={!canPlay}
+          className="rounded-sm border border-keyline px-3 py-1.5 font-mono text-sm text-up transition-colors hover:bg-up/12 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <span aria-hidden>▲</span> Higher
+        </button>
+        <button
+          type="button"
+          onClick={() => makeCall(false)}
+          disabled={!canPlay}
+          className="rounded-sm border border-keyline px-3 py-1.5 font-mono text-sm text-down transition-colors hover:bg-down/12 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <span aria-hidden>▼</span> Lower
+        </button>
+        {modelPup !== null && (
+          <span className="font-mono text-[11px] text-faint tnum">
+            model leans {modelUp ? "higher" : "lower"} ({Math.round(modelPup * 100)}%)
+          </span>
+        )}
       </div>
-      {resolved.length > 0 && (
-        <div className="mt-3 text-sm text-zinc-300">
-          Resolved calls: <span className="text-zinc-100">you {youHit}/{resolved.length}</span> · <span className="text-zinc-100">model {modelHit}/{resolved.length}</span>
+
+      {resolved.length > 0 ? (
+        <div className="mt-4 border-t border-keyline pt-3">
+          <div className="font-mono text-[11px] uppercase tracking-wide text-faint">resolved tally</div>
+          <div className="mt-1 font-mono text-lg text-ink tnum">
+            you {youHit}/{resolved.length}
+            <span className="px-2 text-faint">·</span>
+            model {modelHit}/{resolved.length}
+          </div>
         </div>
+      ) : (
+        <p className="mt-4 border-t border-keyline pt-3 font-mono text-[11px] leading-relaxed text-faint">
+          {calls.length > 0
+            ? "no calls resolved yet — each one settles a week after you make it."
+            : "make a call to start — your first one settles a week from now."}
+        </p>
       )}
+
       {calls.length > 0 && (
-        <ul className="mt-2 divide-y divide-zinc-800 text-xs">
+        <ul className="mt-3 divide-y divide-keyline">
           {calls.slice(0, 6).map((c) => {
             const r = resolveCall(c, prices);
-            const status = !r.resolved ? "pending" : r.userRight ? "✓ you were right" : "✗ you missed";
-            return <li key={c.id} className="flex justify-between py-1.5 text-zinc-500">
-              <span>you said {c.userUp ? "higher" : "lower"}</span><span className={r.resolved ? (r.userRight ? "text-emerald-400" : "text-rose-400") : "text-zinc-600"}>{status}</span>
-            </li>;
+            return (
+              <li key={c.id} className="flex items-center justify-between py-1.5 font-mono text-[11px]">
+                <span className="text-muted">
+                  you said {c.userUp ? "higher" : "lower"}
+                </span>
+                {!r.resolved ? (
+                  <span className="text-faint">pending</span>
+                ) : (
+                  <span className={r.userRight ? "text-up" : "text-down"}>
+                    <span aria-hidden>{r.userRight ? "✓" : "✗"}</span>{" "}
+                    {r.userRight ? "you were right" : "you missed"}
+                  </span>
+                )}
+              </li>
+            );
           })}
         </ul>
       )}
+
+      <p className="mt-4 font-mono text-[10px] text-faint">
+        just for fun, stored only in your browser.
+      </p>
     </div>
   );
 }

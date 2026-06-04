@@ -18,8 +18,8 @@ describe("SignalsStrip", () => {
     expect(screen.getByText("+0.0081%")).toBeInTheDocument();
     expect(screen.getByText("58,473")).toBeInTheDocument();
   });
-  it("renders nothing when there are no signals", () => {
-    const { container } = render(<SignalsStrip signals={[]} />);
-    expect(container.firstChild).toBeNull();
+  it("shows an honest empty state when there are no signals", () => {
+    render(<SignalsStrip signals={[]} />);
+    expect(screen.getByText(/fills in as the feeds report/i)).toBeInTheDocument();
   });
 });

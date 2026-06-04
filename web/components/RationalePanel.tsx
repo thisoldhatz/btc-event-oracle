@@ -1,16 +1,25 @@
 import type { Latest } from "@/lib/types";
-import { sortForecasts } from "@/lib/format";
+import { sortForecasts, fmtDateTime } from "@/lib/format";
 
-export function RationalePanel({ latest }: { latest: Latest | null }) {
-  const rationale = latest ? sortForecasts(latest.forecasts)?.[0]?.rationale : undefined;
+/** "Why it moved" as an editorial PULL-QUOTE: a thick orange left keyline and
+ *  the rationale set large and quiet, with a small mono dateline. When Claude
+ *  applied no event adjustment this run, it reads as a confident statement —
+ *  not an empty box: the raw quant baseline simply stands. */
+export function RationalePanel({ latest }: { latest: Latest }) {
+  const raw = sortForecasts(latest.forecasts)?.[0]?.rationale?.trim();
+  const applied = latest.llm_applied && !!raw;
+  const body = applied
+    ? raw
+    : "No event-driven adjustment this run — the raw quant baseline stands.";
+
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-        Why it moved
-      </h3>
-      <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-        {rationale || "No event-driven adjustment this run — showing the raw quant baseline."}
-      </p>
-    </div>
+    <figure className="anim-fade-up border-l-2 border-accent pl-4">
+      <blockquote className="font-body text-[1.0625rem] leading-relaxed text-ink">
+        {body}
+      </blockquote>
+      <figcaption className="mt-3 font-mono text-[11px] uppercase tracking-wide text-faint tnum">
+        Latest run · {fmtDateTime(latest.run_at)}
+      </figcaption>
+    </figure>
   );
 }

@@ -1,11 +1,15 @@
 // components/InfoDot.test.tsx
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { InfoDot } from "@/components/InfoDot";
+
 describe("InfoDot", () => {
-  it("exposes its explanation as a title/label", () => {
+  it("reveals its explanation via an accessible, keyboard-reachable button", () => {
     render(<InfoDot text="chance the price is higher" />);
-    const el = screen.getByLabelText("chance the price is higher");
-    expect(el).toHaveAttribute("title", "chance the price is higher");
+    const btn = screen.getByRole("button", { name: /explain/i });
+    expect(screen.queryByText("chance the price is higher")).toBeNull();   // hidden until opened
+    fireEvent.click(btn);
+    expect(screen.getByRole("tooltip")).toHaveTextContent("chance the price is higher");
+    expect(btn).toHaveAttribute("aria-expanded", "true");
   });
 });

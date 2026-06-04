@@ -17,6 +17,6 @@ describe("MindTimeline", () => {
   });
   it("shows an empty state", () => {
     render(<MindTimeline timeline={[]} />);
-    expect(screen.getByText(/no history yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/not enough resolved forecasts yet/i)).toBeInTheDocument();
   });
 });

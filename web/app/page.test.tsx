@@ -30,18 +30,17 @@ vi.mock("@/lib/data", () => {
 });
 
 describe("Dashboard page", () => {
-  it("renders cards, signals, news, dial, timeline and LIVE after load", async () => {
+  it("renders the 4-act editorial dashboard after load", async () => {
     render(<Page />);
-    await waitFor(() => expect(screen.getAllByText("1 Week").length).toBeGreaterThan(0));
-    expect(screen.getByText(/Extreme Fear drives caution/)).toBeInTheDocument();
-    expect(screen.getByText(/Bitmine ETH loss widens/)).toBeInTheDocument();
-    expect(screen.getByText(/LIVE/)).toBeInTheDocument();
-    expect(screen.getByText(/How the model changed its mind/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/Bitcoin, one/i)).toBeInTheDocument());  // Act II hero
+    expect(screen.getAllByText("1 Week").length).toBeGreaterThan(0);                      // horizon triptych
+    expect(screen.getByText(/Extreme Fear drives caution/)).toBeInTheDocument();          // rationale pull-quote
+    expect(screen.getByText(/Bitmine ETH loss widens/)).toBeInTheDocument();              // news
+    expect(screen.getByText(/BTC.Event.Oracle/i)).toBeInTheDocument();                    // masthead nameplate
+    expect(screen.getByText(/The accuracy record/i)).toBeInTheDocument();                 // scorecard
     expect(screen.getByText(/Did it call it/i)).toBeInTheDocument();
     expect(screen.getAllByText(/insufficient data/i).length).toBe(3);
-    expect(screen.getByText(/real-money markets imply/i)).toBeInTheDocument();
-    expect(screen.getByText(/calibration & skill/i)).toBeInTheDocument();
-    expect(screen.getByText(/your call vs\. the model/i)).toBeInTheDocument();
-    expect(screen.getByText(/intervals modestly widened/i)).toBeInTheDocument();   // regime note
+    expect(screen.getAllByText(/Will Bitcoin be above/).length).toBeGreaterThan(0);       // markets + head-to-head
+    expect(screen.getByText(/intervals modestly widened/i)).toBeInTheDocument();          // regime note
   });
 });

@@ -1,32 +1,51 @@
 import type { Market } from "@/lib/types";
+import { fmtPct, timeUntil } from "@/lib/format";
 
+/** A compact ledger of what real-money prediction markets imply — the crowd's
+ *  odds, shown for context, NOT our forecast. Violet (= the market) throughout,
+ *  never orange. Each row: the question (font-body) + a mono % with a thin
+ *  violet progress rule on a keyline track. Honest empty state. */
 export function MarketsPanel({ markets }: { markets: Market[] }) {
+  const rows = markets ?? [];
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-        What real-money markets imply <span className="text-zinc-600">· Polymarket</span>
-      </h3>
-      {(!markets || markets.length === 0) ? (
-        <p className="mt-3 text-sm text-zinc-600">No live markets right now.</p>
+    <div className="anim-fade-up rounded-lg border border-keyline bg-surface p-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="font-display text-lg text-ink">What the market implies</h3>
+        <span className="kicker text-market">Prediction market</span>
+      </div>
+
+      {rows.length === 0 ? (
+        <p className="mt-4 max-w-measure text-[0.95rem] leading-relaxed text-muted">
+          No live markets right now — this fills in when real-money prediction
+          markets are quoting Bitcoin questions.
+        </p>
       ) : (
-        <ul className="mt-3 space-y-3">
-          {markets.map((m, i) => {
-            const pct = Math.round(m.yes_prob * 100);
+        <ul className="mt-4 divide-y divide-keyline">
+          {rows.map((m, i) => {
+            const pct = Math.max(0, Math.min(1, m.yes_prob));
+            const ends = m.end_date ? timeUntil(m.end_date) : "";
             return (
-              <li key={i}>
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-zinc-300">{m.question}</span>
-                  <span className="shrink-0 font-semibold text-zinc-100">{pct}%</span>
+              <li key={i} className="py-3 first:pt-0 last:pb-0">
+                <div className="flex items-baseline justify-between gap-4">
+                  <span className="font-body text-[0.9rem] leading-snug text-ink">{m.question}</span>
+                  <span className="shrink-0 font-mono text-base text-market tnum">{fmtPct(m.yes_prob)}</span>
                 </div>
-                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
-                  <div className="h-full rounded-full bg-[#60a5fa]" style={{ width: `${pct}%` }} />
+                <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-sunken" aria-hidden>
+                  <div className="h-full rounded-full bg-market/70" style={{ width: `${pct * 100}%` }} />
+                </div>
+                <div className="mt-1.5 flex items-center justify-between font-mono text-[10px] text-faint tnum">
+                  <span>chance “yes”</span>
+                  {ends && ends !== "resolved" && <span>resolves in {ends}</span>}
                 </div>
               </li>
             );
           })}
         </ul>
       )}
-      <p className="mt-3 text-xs text-zinc-600">Live prices from a real-money prediction market — shown for context, not as our forecast.</p>
+
+      <p className="mt-4 border-t border-keyline pt-3 font-mono text-[11px] text-faint">
+        Live odds from a real-money prediction market — shown for context, not our forecast.
+      </p>
     </div>
   );
 }

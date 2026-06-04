@@ -19,6 +19,6 @@ describe("NewsFeed", () => {
   });
   it("shows an empty state when no news", () => {
     render(<NewsFeed news={[]} />);
-    expect(screen.getByText(/no headlines/i)).toBeInTheDocument();
+    expect(screen.getByText(/no recent headlines/i)).toBeInTheDocument();
   });
 });

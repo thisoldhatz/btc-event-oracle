@@ -49,6 +49,14 @@ export interface ScoreH {
   brier_ci?: number | null;
   windows?: Record<"all" | "last30" | "last90", Partial<ScoreH>>;
   ab?: { n: number; model_brier?: number | null; baseline_brier?: number | null; model_crps?: number | null; baseline_crps?: number | null };
+  calibration?: Calibration;
+}
+export interface Calibration {
+  reliability: { p: number; o: number; n: number }[];
+  pit_hist: { lo: number; hi: number; count: number; freq: number }[];
+  mean_pit: number | null;
+  pit_n: number;
+  pit_chi2: number | null;
 }
 export type Scores = Record<Horizon, ScoreH>;
 

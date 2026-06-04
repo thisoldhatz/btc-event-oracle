@@ -7,7 +7,7 @@ import type { ResultItem } from "@/lib/types";
 describe("RecentCalls", () => {
   it("shows an empty state when nothing has matured", () => {
     render(<RecentCalls results={[]} />);
-    expect(screen.getByText(/no calls have matured yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/not enough resolved forecasts yet/i)).toBeInTheDocument();
   });
   it("renders a matured call with a hit/miss marker", () => {
     const results: ResultItem[] = [{
