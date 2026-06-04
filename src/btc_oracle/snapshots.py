@@ -227,6 +227,61 @@ def build_extras(conn) -> dict:
             "market_headtohead": build_market_headtohead(conn)}
 
 
+_SEO_SIGNALS = ("fear_greed", "funding_rate", "open_interest", "implied_vol", "news_tone")
+
+
+def _iso_week(iso: str) -> str:
+    from datetime import datetime
+    c = datetime.fromisoformat(iso).isocalendar()
+    return f"{c[0]}-W{c[1]:02d}"
+
+
+def build_weekly_recaps(conn, limit_weeks: int = 24) -> list:
+    """Group resolved forecasts by ISO week (of their target date) into rich,
+    indexable weekly recap pages — fewer, substantial pages (not thin-content)."""
+    from collections import defaultdict
+    weeks = defaultdict(list)
+    for r in get_results(conn, limit=5000):
+        try:
+            weeks[_iso_week(r["target_at"])].append(r)
+        except Exception:
+            continue
+    out = []
+    for wk in sorted(weeks.keys(), reverse=True)[:limit_weeks]:
+        items = weeks[wk]
+        n = len(items)
+        hits = sum(1 for r in items if (r["p_up"] >= 0.5) == bool(r["up_outcome"]))
+        covs = [r["covered"] for r in items if r["covered"] is not None]
+        perr = [abs(r["realized_price"] - r["central"]) / r["realized_price"] * 100.0
+                for r in items if r["realized_price"]]
+        out.append({
+            "week": wk, "n": n,
+            "hit_rate": (hits / n) if n else None,
+            "coverage_rate": (sum(covs) / len(covs)) if covs else None,
+            "avg_pct_err": (sum(perr) / len(perr)) if perr else None,
+            "items": [{"horizon": r["horizon"], "run_at": r["run_at"], "target_at": r["target_at"],
+                       "central": r["central"], "realized_price": r["realized_price"],
+                       "p_up": r["p_up"], "up_outcome": r["up_outcome"],
+                       "covered": (bool(r["covered"]) if r["covered"] is not None else None)}
+                      for r in items[:12]],
+        })
+    return out
+
+
+def build_seo(conn) -> dict:
+    """Data for the programmatic SEO/GEO pages: a dated 'as of', per-signal recent
+    history, and weekly recaps. Emitted as seo.json; fetched at build time."""
+    from .store import get_signal_history
+    run = get_latest_run_with_forecasts(conn)
+    signals = {
+        sig: [{"observed_at": r["observed_at"], "value": r["value"], "delta": r["delta"],
+               "interpretation": r["interpretation"]} for r in get_signal_history(conn, sig, limit=400)]
+        for sig in _SEO_SIGNALS
+    }
+    return {"as_of": run["run_at"] if run else None, "signals": signals,
+            "recaps": build_weekly_recaps(conn)}
+
+
 def write_snapshots(conn, out_dir: str, signals: list | None = None,
                     news: list | None = None, regime: dict | None = None,
                     markets: list | None = None) -> list[str]:
@@ -234,7 +289,8 @@ def write_snapshots(conn, out_dir: str, signals: list | None = None,
     payloads = {"latest.json": build_latest(conn, signals=signals, news=news, regime=regime, markets=markets),
                 "history.json": build_history(conn),
                 "scores.json": build_scores(conn),
-                "extras.json": build_extras(conn)}
+                "extras.json": build_extras(conn),
+                "seo.json": build_seo(conn)}
     for name, payload in payloads.items():
         with open(os.path.join(out_dir, name), "w", encoding="utf-8") as fh:
             json.dump(payload, fh, indent=2)

@@ -302,6 +302,16 @@ def get_resolved_markets(conn, limit: int = 200):
     ).fetchall()
 
 
+def get_signal_history(conn, signal: str, limit: int = 400):
+    """Recent observed values for one signal (newest first) — powers the
+    per-signal SEO explainer pages."""
+    return conn.execute(
+        "SELECT observed_at, value, delta, interpretation FROM events "
+        "WHERE signal=? AND value IS NOT NULL ORDER BY observed_at DESC LIMIT ?",
+        (signal, limit),
+    ).fetchall()
+
+
 def get_results(conn, limit: int = 30):
     """Resolved forecasts with predicted (central/band/p_up + spot at issue) and actual
     (realized price, up outcome, coverage), newest-resolved first."""
