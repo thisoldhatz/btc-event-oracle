@@ -170,6 +170,26 @@ def build_scores(conn) -> dict:
     return out
 
 
+def build_market_headtohead(conn) -> dict:
+    """Resolved model-vs-market scoring for the head-to-head: per-market Brier for
+    both, plus an aggregate 'who's been closer'. n=0 until markets resolve."""
+    from .store import get_resolved_markets
+    rows = get_resolved_markets(conn)
+    items = [{"question": r["question"], "threshold": r["threshold"], "direction": r["direction"],
+              "end_date": r["end_date"], "outcome": r["outcome"], "market_prob": r["market_prob"],
+              "model_prob": r["model_prob"], "market_brier": r["market_brier"],
+              "model_brier": r["model_brier"]} for r in rows]
+    scored = [i for i in items if i["market_brier"] is not None and i["model_brier"] is not None]
+    n = len(scored)
+    agg = {"n": n, "items": items[:20]}
+    if n:
+        agg["model_brier"] = sum(i["model_brier"] for i in scored) / n
+        agg["market_brier"] = sum(i["market_brier"] for i in scored) / n
+        agg["model_closer"] = sum(1 for i in scored if i["model_brier"] < i["market_brier"])
+        agg["market_closer"] = sum(1 for i in scored if i["market_brier"] < i["model_brier"])
+    return agg
+
+
 def build_extras(conn) -> dict:
     timeline = [
         {"run_at": x["run_at"], "p_up": x["p_up"], "central": x["central"],
@@ -186,7 +206,8 @@ def build_extras(conn) -> dict:
          "covered": (bool(x["covered"]) if x["covered"] is not None else None)}
         for x in get_results(conn)
     ]
-    return {"timeline": timeline, "results": results}
+    return {"timeline": timeline, "results": results,
+            "market_headtohead": build_market_headtohead(conn)}
 
 
 def write_snapshots(conn, out_dir: str, signals: list | None = None,

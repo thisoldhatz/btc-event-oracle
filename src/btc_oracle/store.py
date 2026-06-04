@@ -56,6 +56,15 @@ CREATE TABLE IF NOT EXISTS price_history (
   open REAL, high REAL, low REAL, close REAL, volume REAL,
   PRIMARY KEY (source, interval, ts)
 );
+CREATE TABLE IF NOT EXISTS markets (
+  market_id TEXT PRIMARY KEY,
+  captured_at TEXT NOT NULL,
+  question TEXT, threshold REAL, direction TEXT, end_date TEXT,
+  market_prob REAL, model_prob REAL, spot_at_capture REAL,
+  resolved INTEGER DEFAULT 0,
+  outcome INTEGER, realized_price REAL,
+  market_brier REAL, model_brier REAL, resolved_at TEXT
+);
 """
 
 
@@ -255,6 +264,41 @@ def get_timeline(conn, limit: int = 72):
         "f.confidence_label, f.rationale FROM runs r JOIN forecasts f ON f.run_id = r.run_id "
         "WHERE f.horizon = '1w' ORDER BY r.run_at DESC LIMIT ?",
         (limit,),
+    ).fetchall()
+
+
+def insert_market_once(conn, m: dict) -> bool:
+    """Capture a market's quote the FIRST time it's seen (so we score the at-issue
+    odds for a fair head-to-head, not a later one). Returns True if newly inserted."""
+    cur = conn.execute(
+        "INSERT OR IGNORE INTO markets (market_id, captured_at, question, threshold, "
+        "direction, end_date, market_prob, model_prob, spot_at_capture) VALUES (?,?,?,?,?,?,?,?,?)",
+        (m["market_id"], m["captured_at"], m["question"], m["threshold"], m["direction"],
+         m["end_date"], m["market_prob"], m["model_prob"], m["spot_at_capture"]),
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def get_unresolved_markets(conn, now_iso: str):
+    return conn.execute(
+        "SELECT * FROM markets WHERE resolved=0 AND end_date IS NOT NULL AND end_date <= ?",
+        (now_iso,),
+    ).fetchall()
+
+
+def resolve_market(conn, market_id, *, outcome, realized, market_brier, model_brier, resolved_at):
+    conn.execute(
+        "UPDATE markets SET resolved=1, outcome=?, realized_price=?, market_brier=?, "
+        "model_brier=?, resolved_at=? WHERE market_id=?",
+        (outcome, realized, market_brier, model_brier, resolved_at, market_id),
+    )
+    conn.commit()
+
+
+def get_resolved_markets(conn, limit: int = 200):
+    return conn.execute(
+        "SELECT * FROM markets WHERE resolved=1 ORDER BY resolved_at DESC LIMIT ?", (limit,)
     ).fetchall()
 
 

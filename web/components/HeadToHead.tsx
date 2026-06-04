@@ -1,19 +1,53 @@
-import type { Market } from "@/lib/types";
+import type { Market, MarketHeadToHead } from "@/lib/types";
 import { fmtPct } from "@/lib/format";
 import { Standfirst } from "@/components/Section";
+
+/** The credibility payoff: once markets resolve, an honest scoreboard of the
+ *  model's Brier vs the market's Brier (lower is better) and who's been closer. */
+function ScoredSummary({ s }: { s: MarketHeadToHead }) {
+  const modelB = s.model_brier ?? 0;
+  const marketB = s.market_brier ?? 0;
+  const lead =
+    modelB < marketB ? "The model" : marketB < modelB ? "The market" : "Neither side";
+  return (
+    <div className="mt-5 rounded-md border border-keyline bg-sunken p-4">
+      <div className="font-mono text-[11px] uppercase tracking-wide text-faint">
+        who&apos;s been closer · {s.n} resolved
+      </div>
+      <div className="mt-2 grid grid-cols-1 gap-2 font-mono text-sm tnum sm:grid-cols-2">
+        <div className="text-ink">
+          <span className="text-accent">model</span> Brier {modelB.toFixed(3)} · closer {s.model_closer ?? 0}/{s.n}
+        </div>
+        <div className="text-ink">
+          <span className="text-market">market</span> Brier {marketB.toFixed(3)} · closer {s.market_closer ?? 0}/{s.n}
+        </div>
+      </div>
+      <p className="mt-2 max-w-measure font-body text-xs leading-relaxed text-faint">
+        Lower Brier is better.{" "}
+        {lead === "Neither side"
+          ? "Dead even so far."
+          : `${lead} has been closer to the truth so far — and that's the honest scoreboard, whichever way it falls.`}
+      </p>
+    </div>
+  );
+}
 
 /** "The model vs the crowd." A dumbbell per market: the model's P(up) (orange)
  *  and the market-implied yes_prob (violet) sit on a shared 0–100% axis, joined
  *  by a connector whose LENGTH is the disagreement. Colour is always paired with
  *  a glyph/label so meaning never relies on hue. Head-to-head scoring isn't live
  *  yet — that's stated plainly, not implied. Pure SVG, no chart dep. */
-export function HeadToHead({ markets, modelPup }: { markets: Market[]; modelPup: number | null }) {
+export function HeadToHead({ markets, modelPup, scored }: {
+  markets: Market[]; modelPup: number | null; scored?: MarketHeadToHead;
+}) {
   const rows = markets ?? [];
+  const hasScored = !!scored && scored.n > 0;
 
   if (rows.length === 0) {
     return (
       <div>
         <Standfirst>Real money has an opinion too — here&apos;s where we agree and disagree.</Standfirst>
+        {hasScored && <ScoredSummary s={scored!} />}
         <p className="mt-6 rounded-md border border-keyline bg-sunken px-4 py-5 font-mono text-[13px] leading-relaxed text-faint">
           no live markets to compare against right now — this fills in when a real-money market is open.
         </p>
@@ -24,6 +58,7 @@ export function HeadToHead({ markets, modelPup }: { markets: Market[]; modelPup:
   return (
     <div>
       <Standfirst>Real money has an opinion too — here&apos;s where we agree and disagree.</Standfirst>
+      {hasScored && <ScoredSummary s={scored!} />}
 
       {/* legend — colour bound to a label, never standalone */}
       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 font-mono text-[11px] text-faint">
@@ -43,9 +78,11 @@ export function HeadToHead({ markets, modelPup }: { markets: Market[]; modelPup:
         ))}
       </ul>
 
-      <p className="mt-5 font-mono text-[11px] text-faint">
-        scored once these markets resolve — for now it&apos;s a snapshot of where two opinions sit, not a track record.
-      </p>
+      {!hasScored && (
+        <p className="mt-5 font-mono text-[11px] text-faint">
+          scored once these markets resolve — for now it&apos;s a snapshot of where two opinions sit, not a track record.
+        </p>
+      )}
     </div>
   );
 }

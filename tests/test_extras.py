@@ -63,7 +63,8 @@ from btc_oracle.snapshots import build_extras, write_snapshots
 def test_build_extras_shapes(mem_db):
     _seed_run(mem_db, "2026-06-03T21:00:00+00:00", 65000.0, p_up=0.55, rationale="why")
     extras = build_extras(mem_db)
-    assert set(extras.keys()) == {"timeline", "results"}
+    assert set(extras.keys()) == {"timeline", "results", "market_headtohead"}
+    assert extras["market_headtohead"]["n"] == 0
     assert extras["timeline"][0]["rationale"] == "why"
     assert extras["timeline"][0]["llm_applied"] is True
     assert extras["results"] == []        # nothing resolved

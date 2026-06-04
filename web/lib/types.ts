@@ -98,9 +98,28 @@ export interface ResultItem {
   up_outcome: number;
   covered: boolean | null;
 }
+export interface MarketHeadToHead {
+  n: number;
+  model_brier?: number;
+  market_brier?: number;
+  model_closer?: number;
+  market_closer?: number;
+  items: {
+    question: string;
+    threshold: number;
+    direction: string;
+    end_date: string | null;
+    outcome: number;
+    market_prob: number | null;
+    model_prob: number | null;
+    market_brier: number | null;
+    model_brier: number | null;
+  }[];
+}
 export interface Extras {
   timeline: TimelineItem[];
   results: ResultItem[];
+  market_headtohead?: MarketHeadToHead;
 }
 
 export interface Market {

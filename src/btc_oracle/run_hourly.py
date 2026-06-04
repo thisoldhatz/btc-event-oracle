@@ -33,6 +33,11 @@ def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir,
             link_forecast_event(conn, fid, eid)
 
     resolved = resolve_matured(conn, now_iso)
+    # Head-to-head vs real-money markets: capture each market's + our model's
+    # implied probability (once), and score any that have now resolved.
+    from .market_scoring import capture_markets, resolve_markets
+    capture_markets(conn, markets or [], forecasts, spot, now_iso)
+    resolve_markets(conn, now_iso)
     signals = [event_to_signal(e) for e in events]
     written = write_snapshots(conn, out_dir, signals=signals, news=news or [], regime=regime, markets=markets or [])
     return {"run_id": run_id, "forecasts": len(forecasts), "events": len(event_ids),

@@ -123,7 +123,7 @@ export default function Page() {
             </Section>
 
             <Section kicker="The model vs. the crowd" act="V">
-              <HeadToHead markets={latest.markets ?? []} modelPup={wk.p_up} />
+              <HeadToHead markets={latest.markets ?? []} modelPup={wk.p_up} scored={extras?.market_headtohead} />
             </Section>
 
             <Section kicker="In the margins">
