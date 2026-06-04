@@ -5,7 +5,8 @@ from .resolve import resolve_matured
 from .snapshots import write_snapshots, event_to_signal
 
 
-def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir, model_id="baseline-only", news=None):
+def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir,
+             model_id="baseline-only", news=None, spot_source="coingecko"):
     """One full hourly cycle: build event-aware forecasts, persist them, resolve any
     matured prior forecasts, and emit JSON snapshots. Returns a summary dict."""
     from .cli import build_enriched_forecasts  # local import avoids a cli<->run_hourly cycle
@@ -17,7 +18,7 @@ def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir, m
     # the baseline (llm_applied=False), the provenance is baseline-only regardless
     # of whether an API key was configured.
     stored_model = model_id if llm_applied else "baseline-only"
-    run_id = insert_run(conn, run_at=now_iso, spot_at_issue=spot, spot_source="coingecko",
+    run_id = insert_run(conn, run_at=now_iso, spot_at_issue=spot, spot_source=spot_source,
                         model_id=stored_model, prompt_version="v1", engine_version="0.1.0",
                         llm_applied=llm_applied)
     drift_mode = "zero" if settings.mu_daily == 0 else f"mu={settings.mu_daily}"

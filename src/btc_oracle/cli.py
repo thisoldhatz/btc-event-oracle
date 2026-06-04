@@ -9,7 +9,7 @@ from .config import get_settings
 from .store import connect, init_schema, get_closes
 from .returns import log_returns, ewma_volatility
 from .baseline import build_baseline_forecasts
-from .prices import backfill, fetch_spot
+from .prices import backfill, fetch_spot, fetch_spot_resilient
 from .events import collect_events, condense
 from .overlay import run_overlay
 from .llm import make_claude_call
@@ -79,7 +79,7 @@ def cmd_run(settings):
     conn = connect(settings.db_path)
     init_schema(conn)
     backfill(conn, ccxt.coinbase(), source="coinbase", symbol="BTC/USD", timeframe="1d")
-    spot = fetch_spot(_httpx_get, demo_key=settings.coingecko_demo_key)
+    spot, spot_source = fetch_spot_resilient(_httpx_get, demo_key=settings.coingecko_demo_key)
     claude_call = (make_claude_call(settings.anthropic_api_key)
                    if settings.anthropic_api_key else None)
     model_id = "claude-sonnet-4-6" if settings.anthropic_api_key else "baseline-only"
@@ -87,9 +87,10 @@ def cmd_run(settings):
     now_iso = datetime.now(timezone.utc).isoformat()
     summary = run_once(conn, settings, now_iso=now_iso, spot=spot, http_get=_httpx_get,
                        claude_call=claude_call, out_dir=settings.snapshot_dir,
-                       model_id=model_id, news=news)
-    print(f"run {summary['run_id'][:8]}: forecasts={summary['forecasts']} "
-          f"events={summary['events']} news={summary['news']} resolved={summary['resolved']} "
+                       model_id=model_id, news=news, spot_source=spot_source)
+    print(f"run {summary['run_id'][:8]}: spot={spot:,.0f}({spot_source}) "
+          f"forecasts={summary['forecasts']} events={summary['events']} "
+          f"news={summary['news']} resolved={summary['resolved']} "
           f"llm_applied={summary['llm_applied']} -> {settings.snapshot_dir}")
 
 

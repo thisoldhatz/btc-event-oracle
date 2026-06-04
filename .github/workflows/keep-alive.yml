@@ -1,0 +1,27 @@
+name: keep-alive
+
+# GitHub disables scheduled workflows after 60 days of repository inactivity.
+# A tiny weekly commit keeps the repo "active" so the hourly forecast never
+# silently dies. (Negligible churn: one line in .keepalive per week.)
+
+on:
+  schedule:
+    - cron: "23 6 * * 1"      # Mondays 06:23 UTC (offset, not on the hour)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Touch keep-alive marker
+        run: |
+          git config user.name "btc-oracle-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          date -u +%FT%TZ > .keepalive
+          git add .keepalive
+          git commit -q -m "chore: keep-alive $(date -u +%F)" || echo "no change"
+          git push

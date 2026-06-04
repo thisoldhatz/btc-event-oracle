@@ -15,6 +15,8 @@ concurrency:
 jobs:
   forecast:
     runs-on: ubuntu-latest
+    env:
+      HC_PING_URL: ${{ secrets.HC_PING_URL }}   # optional healthchecks.io dead-man-switch
     steps:
       - uses: actions/checkout@v5
 
@@ -45,6 +47,14 @@ jobs:
           SNAPSHOT_DIR: ./public_html/btc/data
         run: python -m btc_oracle.cli run
 
+      - name: Back up forecast-history db (artifact, 30-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-db
+          path: state/oracle.db
+          retention-days: 30
+          overwrite: true
+
       - name: Push snapshots to cPanel host (SFTP)
         env:
           SSH_HOST: ${{ secrets.SFTP_HOST }}
@@ -64,3 +74,11 @@ jobs:
           git add -f oracle.db
           git commit -q -m "forecast-history @ $(date -u +%FT%TZ)"
           git push -f origin state-new:state
+
+      - name: Healthcheck ping (success)
+        if: ${{ success() && env.HC_PING_URL != '' }}
+        run: curl -fsS -m 10 "$HC_PING_URL" || true
+
+      - name: Healthcheck ping (failure)
+        if: ${{ failure() && env.HC_PING_URL != '' }}
+        run: curl -fsS -m 10 "$HC_PING_URL/fail" || true

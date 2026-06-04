@@ -44,3 +44,29 @@ def fetch_spot(http_get, demo_key=None):
     headers = {"x-cg-demo-api-key": demo_key} if demo_key else {}
     data = http_get(url, params, headers)
     return float(data["bitcoin"]["usd"])
+
+
+def fetch_spot_resilient(http_get, demo_key=None):
+    """Live BTC/USD spot with multi-source failover: CoinGecko -> Coinbase -> Kraken.
+    Returns (price, source). Raises only if EVERY source fails. A single-source
+    outage is the most common real failure mode, so we never let it break a run."""
+    sources = [
+        ("coingecko", lambda: float(http_get(
+            "https://api.coingecko.com/api/v3/simple/price",
+            {"ids": "bitcoin", "vs_currencies": "usd"},
+            {"x-cg-demo-api-key": demo_key} if demo_key else {})["bitcoin"]["usd"])),
+        ("coinbase", lambda: float(http_get(
+            "https://api.coinbase.com/v2/prices/BTC-USD/spot", {}, {})["data"]["amount"])),
+        ("kraken", lambda: float(http_get(
+            "https://api.kraken.com/0/public/Ticker", {"pair": "XBTUSD"}, {})["result"]["XXBTZUSD"]["c"][0])),
+    ]
+    last_err = None
+    for name, fn in sources:
+        try:
+            price = fn()
+            if price > 0:
+                return price, name
+        except Exception as e:  # noqa: BLE001 - any failure -> try next source
+            last_err = e
+            continue
+    raise RuntimeError(f"all spot sources failed: {last_err}")

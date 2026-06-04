@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { sortForecasts } from "@/lib/format";
+import { sortForecasts, relativeTime } from "@/lib/format";
 import { useLiveData, useLivePrice } from "@/lib/hooks";
 import { Header } from "@/components/Header";
 import { SignalsStrip } from "@/components/SignalsStrip";
@@ -35,6 +35,12 @@ export default function Page() {
         <span><span className="mr-1.5">👋</span> New here? Read the plain-English guide to what every number on this page means.</span>
         <span className="ml-3 shrink-0 text-[#f7931a]">How to read this →</span>
       </Link>
+
+      {latest?.run_at && now - Date.parse(latest.run_at) > 90 * 60 * 1000 && (
+        <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-300">
+          ⚠ Heads up — data may be stale: the last forecast update was {relativeTime(latest.run_at, now)} (it normally refreshes hourly).
+        </div>
+      )}
 
       {error && (
         <div className="mt-6 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
