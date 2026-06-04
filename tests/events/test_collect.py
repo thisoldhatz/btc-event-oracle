@@ -4,6 +4,10 @@ FNG = {"data": [{"value": "11", "value_classification": "Extreme Fear", "timesta
 # OKX-shaped funding / open-interest responses (collect_events now uses the OKX adapter)
 FUNDING = {"code": "0", "data": [{"instId": "BTC-USD-SWAP", "fundingRate": "0.00008", "fundingTime": "1780502400000"}]}
 OI = {"code": "0", "data": [{"oi": "7516", "oiCcy": "59742.9", "ts": "1780509600000"}]}
+DVOL = {"result": {"data": [
+    [1780513200000, 44.0, 45.0, 43.5, 44.18],
+    [1780516800000, 44.18, 46.34, 44.18, 46.34],
+]}}
 
 
 def test_collect_aggregates_all_sources():
@@ -14,11 +18,13 @@ def test_collect_aggregates_all_sources():
             return FUNDING
         if "open-interest" in url:
             return OI
+        if "deribit" in url:
+            return DVOL
         if "gdelt" in url:
             return {"timeline": [{"data": [{"date": "20260603T100000Z", "value": 2.0}]}]}
         raise AssertionError(url)
     evs = collect_events(fake_get)
-    assert {e.source for e in evs} == {"fng", "funding", "oi", "gdelt"}
+    assert {"fng", "funding", "oi", "gdelt", "dvol"}.issubset({e.source for e in evs})
 
 
 def test_collect_is_fail_soft_per_source():

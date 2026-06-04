@@ -1,5 +1,6 @@
 # src/btc_oracle/cli.py
 import argparse
+import math
 from datetime import datetime, timezone
 
 import ccxt
@@ -8,7 +9,10 @@ import httpx
 from .config import get_settings
 from .store import connect, init_schema, get_closes
 from .returns import log_returns, ewma_volatility
-from .baseline import build_baseline_forecasts
+from .baseline import forecast_from_sigma_h
+from .garch import garch_sigma_h
+from .regime import detect_regime
+from .types import HORIZONS
 from .prices import backfill, fetch_spot, fetch_spot_resilient
 from .events import collect_events, condense
 from .overlay import run_overlay
@@ -16,13 +20,24 @@ from .llm import make_claude_call
 
 
 def compute_current_baseline(conn, settings, spot, source="coinbase", interval="1d"):
+    """GJR-GARCH horizon volatility (fallback EWMA*sqrt(t)), widened in turbulent
+    regimes. Returns (forecasts, regime) where regime = {label, percentile}."""
     closes = get_closes(conn, source, interval)
     rets = log_returns(closes)
-    sigma_daily = ewma_volatility(rets, lam=settings.vol_lambda)
-    return build_baseline_forecasts(
-        spot=spot, sigma_daily=sigma_daily, mu_daily=settings.mu_daily,
-        conf_level=settings.conf_level, vol_model="ewma", vol_window=len(rets),
-    )
+    sigma_ewma = ewma_volatility(rets, lam=settings.vol_lambda)
+    label, pct, widen = detect_regime(rets)
+    forecasts = []
+    for h, days in HORIZONS.items():
+        g = garch_sigma_h(rets, days)
+        if g is not None:
+            sigma_h, vol_model = g * widen, "gjr-garch"
+        else:
+            sigma_h, vol_model = sigma_ewma * math.sqrt(days) * widen, "ewma"
+        forecasts.append(forecast_from_sigma_h(
+            spot=spot, sigma_h=sigma_h, horizon=h, horizon_days=days,
+            mu_daily=settings.mu_daily, conf_level=settings.conf_level,
+            vol_model=vol_model, vol_window=len(rets)))
+    return forecasts, {"label": label, "percentile": pct}
 
 
 def _httpx_get(url, params, headers):
@@ -40,13 +55,13 @@ def _noop_claude(system, user):
 
 
 def build_enriched_forecasts(conn, settings, spot, http_get, claude_call):
-    """Baseline -> live events -> bounded Claude overlay (or fallback).
-    Returns (forecasts, rationale, llm_applied, events)."""
-    baselines = compute_current_baseline(conn, settings, spot=spot)
+    """Baseline (GARCH+regime) -> live events -> bounded Claude overlay (or fallback).
+    Returns (forecasts, rationale, llm_applied, events, regime)."""
+    baselines, regime = compute_current_baseline(conn, settings, spot=spot)
     events = collect_events(http_get)
     call = claude_call if claude_call is not None else _noop_claude
     forecasts, rationale, applied = run_overlay(baselines, condense(events), call)
-    return forecasts, rationale, applied, events
+    return forecasts, rationale, applied, events, regime
 
 
 def cmd_preview(settings):
@@ -55,9 +70,9 @@ def cmd_preview(settings):
     spot = fetch_spot(_httpx_get, demo_key=settings.coingecko_demo_key)
     claude_call = (make_claude_call(settings.anthropic_api_key)
                    if settings.anthropic_api_key else None)
-    forecasts, rationale, applied, events = build_enriched_forecasts(
+    forecasts, rationale, applied, events, regime = build_enriched_forecasts(
         conn, settings, spot=spot, http_get=_httpx_get, claude_call=claude_call)
-    print(f"spot={spot:,.0f}  llm_applied={applied}  events={len(events)}")
+    print(f"regime={regime['label']}  spot={spot:,.0f}  llm_applied={applied}  events={len(events)}")
     for f in forecasts:
         print(f"{f.horizon:>3} [{f.confidence_label:>6}]: central={f.central:,.0f} "
               f"[{f.lower:,.0f} - {f.upper:,.0f}] P(up)={f.p_up:.0%} "
@@ -106,7 +121,8 @@ def cmd_baseline(settings):
     conn = connect(settings.db_path)
     init_schema(conn)
     spot = fetch_spot(_httpx_get, demo_key=settings.coingecko_demo_key)
-    for f in compute_current_baseline(conn, settings, spot=spot):
+    fs, _regime = compute_current_baseline(conn, settings, spot=spot)
+    for f in fs:
         print(f"{f.horizon:>3}: central={f.central:,.0f} "
               f"[{f.lower:,.0f} - {f.upper:,.0f}] P(up)={f.p_up:.0%}")
 

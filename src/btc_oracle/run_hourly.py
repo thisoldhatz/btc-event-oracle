@@ -11,7 +11,7 @@ def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir,
     matured prior forecasts, and emit JSON snapshots. Returns a summary dict."""
     from .cli import build_enriched_forecasts  # local import avoids a cli<->run_hourly cycle
 
-    forecasts, rationale, llm_applied, events = build_enriched_forecasts(
+    forecasts, rationale, llm_applied, events, regime = build_enriched_forecasts(
         conn, settings, spot=spot, http_get=http_get, claude_call=claude_call)
 
     # Record the model that ACTUALLY shaped this run. If the overlay fell back to
@@ -34,7 +34,7 @@ def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir,
 
     resolved = resolve_matured(conn, now_iso)
     signals = [event_to_signal(e) for e in events]
-    written = write_snapshots(conn, out_dir, signals=signals, news=news or [])
+    written = write_snapshots(conn, out_dir, signals=signals, news=news or [], regime=regime)
     return {"run_id": run_id, "forecasts": len(forecasts), "events": len(event_ids),
             "resolved": len(resolved), "llm_applied": llm_applied, "snapshots": written,
             "news": len(news or [])}

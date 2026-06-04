@@ -31,8 +31,9 @@ def test_build_enriched_forecasts_with_events_and_fake_llm(mem_db):
             "1y": {"drift_adj_bps": 0, "vol_mult": 1.0, "skew_adj": 0.0, "p_up_override": None, "confidence": "low"},
         }, "rationale": "fear is high", "event_refs": []})
 
-    forecasts, rationale, applied, events = build_enriched_forecasts(
+    forecasts, rationale, applied, events, regime = build_enriched_forecasts(
         mem_db, _settings(), spot=140.0, http_get=fake_http_get, claude_call=fake_claude)
+    assert "label" in regime
 
     assert applied is True
     assert rationale == "fear is high"
@@ -49,7 +50,7 @@ def test_build_enriched_forecasts_without_llm_falls_back(mem_db):
         return {"data": []} if "alternative.me" in url else {"result": {"list": []}, "timeline": []}
 
     # claude_call=None simulates "no API key configured" -> fallback path
-    forecasts, rationale, applied, events = build_enriched_forecasts(
+    forecasts, rationale, applied, events, regime = build_enriched_forecasts(
         mem_db, _settings(), spot=140.0, http_get=fake_http_get, claude_call=None)
     assert applied is False
     assert len(forecasts) == 3

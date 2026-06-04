@@ -1,4 +1,4 @@
-from . import fear_greed, okx, gdelt
+from . import fear_greed, okx, gdelt, deribit
 from .base import Event
 
 # (name, callable). OKX is used for funding/OI because it works from data-center
@@ -6,6 +6,7 @@ from .base import Event
 _SOURCES = [
     ("fng", fear_greed.fetch),
     ("okx", okx.fetch),
+    ("deribit", deribit.fetch),
     ("gdelt", gdelt.fetch_tone),
 ]
 

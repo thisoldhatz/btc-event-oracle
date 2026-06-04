@@ -1,7 +1,7 @@
 # tests/test_baseline.py
 import math
 from statistics import NormalDist
-from btc_oracle.baseline import baseline_forecast, build_baseline_forecasts
+from btc_oracle.baseline import baseline_forecast, build_baseline_forecasts, forecast_from_sigma_h
 from btc_oracle.types import HORIZONS
 
 
@@ -47,3 +47,13 @@ def test_build_returns_one_forecast_per_horizon_widening():
     for f in fs:
         assert f.lower < f.central < f.upper
         assert 0.0 < f.p_up < 1.0
+
+
+def test_forecast_from_sigma_h_builds_band_directly():
+    f = forecast_from_sigma_h(spot=60000.0, sigma_h=0.08, horizon="1m", horizon_days=30,
+                              mu_daily=0.0, conf_level=0.60, vol_model="gjr-garch", vol_window=300)
+    assert f.sigma_h == 0.08
+    assert f.vol_model == "gjr-garch"
+    assert f.lower < f.central < f.upper
+    assert abs(f.central - 60000.0) < 1e-6        # mu=0 -> central == spot
+    assert 0.0 < f.p_up < 1.0
