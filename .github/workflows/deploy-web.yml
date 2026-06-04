@@ -31,7 +31,9 @@ jobs:
 
       - name: Install deps
         working-directory: web
-        run: npm ci
+        # npm install (not `npm ci`): the lockfile is generated on Windows and
+        # omits the Linux @esbuild/* optional binaries, which `npm ci` rejects.
+        run: npm install --no-audit --no-fund
 
       - name: Test (gate the deploy on green tests)
         working-directory: web
