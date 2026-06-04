@@ -2,7 +2,8 @@
 
 > If you're a Claude Code session opened in this directory: this file is the source of truth for
 > what this project is and how to work on it. Host/credential specifics that can't be public are in
-> **`deploy/notes.local.md`** (gitignored — read it for cPanel/GitHub specifics).
+> **`deploy/notes.local.md`** (gitignored — read it for cPanel/GitHub specifics). For a quick
+> "where are we / what's next" snapshot on resuming, read **`STATUS.md`**.
 
 ## What this is
 An **honest, hourly Bitcoin price forecast** website. Every hour a Python engine reads world-event
