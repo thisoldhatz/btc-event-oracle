@@ -166,4 +166,19 @@ def write_snapshots(conn, out_dir: str, signals: list | None = None,
     for name, payload in payloads.items():
         with open(os.path.join(out_dir, name), "w", encoding="utf-8") as fh:
             json.dump(payload, fh, indent=2)
-    return list(payloads.keys())
+    latest_payload = payloads["latest.json"]
+    extra_files = []
+    try:
+        from .og import render_og_card
+        render_og_card(latest_payload, os.path.join(out_dir, "og.png"))
+        extra_files.append("og.png")
+    except Exception:
+        pass
+    try:
+        from .feed import build_rss
+        with open(os.path.join(out_dir, "rss.xml"), "w", encoding="utf-8") as fh:
+            fh.write(build_rss(latest_payload))
+        extra_files.append("rss.xml")
+    except Exception:
+        pass
+    return list(payloads.keys()) + extra_files

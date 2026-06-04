@@ -5,6 +5,8 @@ from btc_oracle.baseline import baseline_forecast
 from btc_oracle.overlay import apply_overlay
 from btc_oracle.events.base import Event
 import json
+import os
+from PIL import Image
 
 
 def _seed(conn):
@@ -53,3 +55,12 @@ def test_write_snapshots_passes_signals_and_news(mem_db, tmp_path):
     data = json.loads((tmp_path / "latest.json").read_text())
     assert data["signals"] == [{"source": "fng"}]
     assert data["news"] == [{"title": "x"}]
+
+
+def test_write_snapshots_also_emits_og_and_rss(mem_db, tmp_path):
+    _seed(mem_db)   # existing helper in this file
+    written = write_snapshots(mem_db, str(tmp_path))
+    assert "og.png" in written and "rss.xml" in written
+    assert os.path.exists(tmp_path / "og.png") and os.path.exists(tmp_path / "rss.xml")
+    assert Image.open(tmp_path / "og.png").size == (1200, 630)
+    assert (tmp_path / "rss.xml").read_text().startswith("<?xml")

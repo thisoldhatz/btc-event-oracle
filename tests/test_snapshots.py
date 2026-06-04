@@ -57,7 +57,7 @@ def test_build_scores_aggregates(mem_db):
 def test_write_snapshots_emits_three_files(mem_db, tmp_path):
     _seed_run(mem_db, "2026-06-01T00:00:00+00:00", 64000.0)
     written = write_snapshots(mem_db, str(tmp_path))
-    assert set(written) == {"latest.json", "history.json", "scores.json", "extras.json"}
+    assert set(written).issuperset({"latest.json", "history.json", "scores.json", "extras.json"})
     data = json.loads((tmp_path / "latest.json").read_text())
     assert data["spot"] == 64000.0
 
