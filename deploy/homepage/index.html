@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BTC Event Oracle — honest, tracked Bitcoin forecasts</title>
+  <meta name="description" content="An honest, hourly Bitcoin forecast driven by world events and held accountable against a random-walk benchmark. Not financial advice." />
+  <meta property="og:title" content="BTC Event Oracle" />
+  <meta property="og:description" content="Honest, hourly Bitcoin forecasts — scored openly against random walk. Not a crystal ball; a tracked method." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://vadym.online/btc" />
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #09090b; color: #e4e4e7;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .wrap { max-width: 640px; text-align: center; }
+    .logo { font-size: 64px; line-height: 1; }
+    h1 { font-size: 2rem; margin: 12px 0 4px; }
+    .accent { color: #f7931a; }
+    p.lead { color: #a1a1aa; font-size: 1.05rem; line-height: 1.6; margin: 8px auto 0; max-width: 32rem; }
+    .price { margin: 22px 0 4px; font-size: 2.2rem; font-weight: 700; }
+    .price small { display: block; font-size: .7rem; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: #71717a; }
+    .cta { display: inline-block; margin-top: 26px; background: #f7931a; color: #000; font-weight: 600;
+      text-decoration: none; padding: 14px 28px; border-radius: 10px; transition: transform .12s ease; }
+    .cta:hover { transform: translateY(-1px); }
+    .links { margin-top: 22px; font-size: .85rem; }
+    .links a { color: #a1a1aa; text-decoration: none; margin: 0 10px; }
+    .links a:hover { color: #f7931a; }
+    .disc { margin-top: 30px; font-size: .72rem; color: #52525b; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="logo"><span class="accent">₿</span></div>
+    <h1>BTC Event&nbsp;Oracle</h1>
+    <p class="lead">An honest, hourly Bitcoin forecast driven by world events — and held accountable
+      against a random-walk benchmark. Not a crystal ball; a tracked method.</p>
+
+    <div class="price"><small>Live BTC</small><span id="price">—</span></div>
+
+    <a class="cta" href="/btc/">Open the live dashboard →</a>
+
+    <div class="links">
+      <a href="/btc/guide/">How to read it</a> ·
+      <a href="/btc/disclaimer/">Disclaimer</a> ·
+      <a href="https://github.com/thisoldhatz/btc-event-oracle">Source</a>
+    </div>
+
+    <p class="disc">Educational / portfolio project — not financial advice, not from a registered broker
+      or adviser. Model-implied probabilities and ranges, not guarantees. Bitcoin is highly volatile.</p>
+  </main>
+  <script>
+    fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
+      .then(r => r.json())
+      .then(j => { const p = j && j.bitcoin && j.bitcoin.usd;
+        if (p) document.getElementById("price").textContent = "$" + Math.round(p).toLocaleString("en-US"); })
+      .catch(() => {});
+  </script>
+</body>
+</html>
