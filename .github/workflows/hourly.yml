@@ -55,14 +55,9 @@ jobs:
           retention-days: 30
           overwrite: true
 
-      - name: Push snapshots to cPanel host (SFTP)
-        env:
-          SSH_HOST: ${{ secrets.SFTP_HOST }}
-          SSH_PORT: ${{ secrets.SFTP_PORT }}
-          SSH_USER: ${{ secrets.SFTP_USER }}
-          SSH_PASS: ${{ secrets.SFTP_PASS }}
-        run: python deploy/sftp_upload.py public_html/btc/data public_html/btc/data
-
+      # Persist the durable forecast-history db to the 'state' branch BEFORE the
+      # live push, so a crash between the two can never publish a forecast that
+      # has no durable record to ever resolve/score (a silent track-record hole).
       - name: Save forecast-history db (single-commit 'state' branch, no history bloat)
         run: |
           git config user.name "btc-oracle-bot"
@@ -74,6 +69,14 @@ jobs:
           git add -f oracle.db
           git commit -q -m "forecast-history @ $(date -u +%FT%TZ)"
           git push -f origin state-new:state
+
+      - name: Push snapshots to cPanel host (SFTP)
+        env:
+          SSH_HOST: ${{ secrets.SFTP_HOST }}
+          SSH_PORT: ${{ secrets.SFTP_PORT }}
+          SSH_USER: ${{ secrets.SFTP_USER }}
+          SSH_PASS: ${{ secrets.SFTP_PASS }}
+        run: python deploy/sftp_upload.py public_html/btc/data public_html/btc/data
 
       - name: Healthcheck ping (success)
         if: ${{ success() && env.HC_PING_URL != '' }}

@@ -2,8 +2,8 @@
 import json
 import os
 from .types import HORIZONS
-from .store import (get_latest_run, get_forecasts_for_run, get_forecast_history, get_scores,
-                    get_timeline, get_results, get_scored_detail)
+from .store import (get_latest_run_with_forecasts, get_forecasts_for_run, get_forecast_history,
+                    get_scores, get_timeline, get_results, get_scored_detail)
 from .scoring import crps_normal
 
 _F_KEYS = ("horizon", "target_at", "central", "lower", "upper", "conf_level",
@@ -20,7 +20,7 @@ def event_to_signal(e) -> dict:
 def build_latest(conn, signals: list | None = None, news: list | None = None,
                  regime: dict | None = None, markets: list | None = None) -> dict:
     _regime = regime or {"label": "normal", "percentile": 0.5}
-    run = get_latest_run(conn)
+    run = get_latest_run_with_forecasts(conn)
     if run is None:
         return {"run_at": None, "spot": None, "llm_applied": False,
                 "model_id": None, "forecasts": [], "signals": signals or [],
@@ -67,9 +67,9 @@ def _window(rows):
     return {
         "n": n,
         "brier": brier, "brier_base": brier_base,
-        "bss": (1.0 - brier / brier_base) if brier and brier_base else None,
+        "bss": (1.0 - brier / brier_base) if (brier is not None and brier_base) else None,
         "crps": crps, "crps_rw": crps_rw,
-        "crpss": (1.0 - crps / crps_rw) if crps and crps_rw else None,
+        "crpss": (1.0 - crps / crps_rw) if (crps is not None and crps_rw) else None,
         "mape": (sum(apes) / len(apes)) if apes else None,
         "coverage": _mean([r["covered"] for r in rows]),
         "coverage_nominal": _mean([r["conf_level"] for r in rows]),

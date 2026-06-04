@@ -1,5 +1,12 @@
 import numpy as np
-from btc_oracle.garch import garch_sigma_h
+from btc_oracle.garch import garch_sigma_h, _persistence_ok
+
+
+def test_persistence_guard_rejects_explosive_and_nonfinite():
+    ok = {"omega": 0.1, "alpha[1]": 0.05, "gamma[1]": 0.02, "beta[1]": 0.90}
+    assert _persistence_ok(ok)                                                  # 0.96 < 0.999
+    assert not _persistence_ok({"omega": 0.1, "alpha[1]": 0.05, "beta[1]": 0.97})   # 1.02 explosive
+    assert not _persistence_ok({"omega": float("nan"), "alpha[1]": 0.1, "beta[1]": 0.5})
 
 
 def _returns(n=400, seed=0):

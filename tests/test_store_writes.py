@@ -148,3 +148,14 @@ def test_get_scored_detail_returns_joined_rows(mem_db):
     r = rows[0]
     assert r["realized_price"] == 66000.0 and r["crps"] == 0.02
     assert "baseline_p_up" in r.keys() and "spot_at_issue" in r.keys() and "conf_level" in r.keys()
+
+
+def test_get_latest_run_with_forecasts_skips_empty(mem_db):
+    from btc_oracle.store import get_latest_run_with_forecasts
+    _seed_forecast(mem_db, run_at="2026-06-01T00:00:00+00:00",
+                   target_at="2026-06-08T00:00:00+00:00", spot=64000.0)
+    insert_run(mem_db, run_at="2026-06-09T00:00:00+00:00", spot_at_issue=1.0,
+               spot_source="x", model_id="m", prompt_version="v",
+               engine_version="e", llm_applied=False)   # newer run, no forecasts
+    r = get_latest_run_with_forecasts(mem_db)
+    assert r["spot_at_issue"] == 64000.0

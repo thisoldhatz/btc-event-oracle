@@ -104,3 +104,20 @@ def test_build_scores_rich_aggregate(mem_db):
     assert sc["windows"]["all"]["n"] == 2
     # A/B: model p_up (0.7,0.6) beats baseline (0.5,0.5) when both went up
     assert sc["ab"]["model_brier"] < sc["ab"]["baseline_brier"]
+
+
+def test_bss_is_one_for_perfect_brier(mem_db):
+    # regression: the falsy-guard used to null BSS when mean Brier was exactly 0.0
+    _resolved(mem_db, p_up=1.0, baseline_p_up=0.5, up_outcome=1)   # brier=(1-1)^2=0
+    sc = build_scores(mem_db)["1w"]
+    assert sc["brier"] == 0.0
+    assert sc["bss"] == 1.0
+
+
+def test_build_latest_skips_forecastless_newest_run(mem_db):
+    _seed_run(mem_db, "2026-06-01T00:00:00+00:00", 64000.0)        # complete run
+    insert_run(mem_db, run_at="2026-06-02T00:00:00+00:00", spot_at_issue=99999.0,
+               spot_source="cg", model_id="m", prompt_version="v",
+               engine_version="e", llm_applied=True)               # half-written: no forecasts
+    latest = build_latest(mem_db)
+    assert latest["spot"] == 64000.0 and len(latest["forecasts"]) == 3

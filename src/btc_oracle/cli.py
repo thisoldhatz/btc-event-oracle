@@ -13,7 +13,7 @@ from .baseline import forecast_from_sigma_h
 from .garch import garch_sigma_h
 from .regime import detect_regime
 from .types import HORIZONS
-from .prices import backfill, fetch_spot, fetch_spot_resilient
+from .prices import backfill, safe_backfill, fetch_spot, fetch_spot_resilient
 from .events import collect_events, condense
 from .events.polymarket import fetch_markets
 from .overlay import run_overlay
@@ -94,8 +94,10 @@ def cmd_run(settings):
     from .events.news import fetch_news, news_to_dict
     conn = connect(settings.db_path)
     init_schema(conn)
-    backfill(conn, ccxt.coinbase(), source="coinbase", symbol="BTC/USD", timeframe="1d")
-    spot, spot_source = fetch_spot_resilient(_httpx_get, demo_key=settings.coingecko_demo_key)
+    safe_backfill(conn, ccxt.coinbase(), source="coinbase", symbol="BTC/USD", timeframe="1d")
+    last_close = (get_closes(conn, "coinbase", "1d") or [None])[-1]
+    spot, spot_source = fetch_spot_resilient(_httpx_get, demo_key=settings.coingecko_demo_key,
+                                             last_close=last_close)
     claude_call = (make_claude_call(settings.anthropic_api_key)
                    if settings.anthropic_api_key else None)
     model_id = "claude-sonnet-4-6" if settings.anthropic_api_key else "baseline-only"

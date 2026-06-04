@@ -19,11 +19,15 @@ def test_insert_and_read_prices_ordered(mem_db):
     assert closes == [100.0, 101.0, 102.0]  # sorted by ts ascending
 
 
-def test_insert_is_idempotent_on_primary_key(mem_db):
-    row = [("coinbase", "1d", 1.0, 0, 0, 0, 100.0, 0)]
-    assert insert_prices(mem_db, row) == 1
-    assert insert_prices(mem_db, row) == 0  # INSERT OR IGNORE dedupes
-    assert get_closes(mem_db, "coinbase", "1d") == [100.0]
+def test_insert_prices_upserts_latest_candle(mem_db):
+    # The still-forming daily candle is re-fetched every hour; the latest values
+    # must OVERWRITE the earlier partial ones (regression: the close used to
+    # freeze at its first intraday reading, poisoning vol inputs + scoring).
+    assert insert_prices(mem_db, [("coinbase", "1d", 1.0, 0, 0, 0, 100.0, 0)]) == 1
+    insert_prices(mem_db, [("coinbase", "1d", 1.0, 1, 5, 0.5, 103.0, 9)])
+    assert get_closes(mem_db, "coinbase", "1d") == [103.0]
+    row = mem_db.execute("SELECT high, low, volume FROM price_history WHERE ts=1.0").fetchone()
+    assert row["high"] == 5 and row["low"] == 0.5 and row["volume"] == 9
 
 
 def test_get_closes_respects_limit(mem_db):

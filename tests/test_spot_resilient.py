@@ -38,3 +38,33 @@ def test_raises_when_all_fail():
         raise RuntimeError("everything down")
     with pytest.raises(RuntimeError):
         fetch_spot_resilient(get)
+
+
+def test_rejects_implausible_glitch_and_falls_through():
+    # a decimal-shift / stale-cache glitch (1.0) must be rejected, not anchored
+    def get(url, params, headers):
+        if "coingecko" in url:
+            return {"bitcoin": {"usd": 1.0}}
+        if "coinbase" in url:
+            return CB
+        raise AssertionError("should not reach kraken")
+    price, source = fetch_spot_resilient(get, last_close=65000.0)
+    assert source == "coinbase" and abs(price - 64000.5) < 1e-6
+
+
+def test_absolute_floor_rejects_subdollar_price():
+    def get(url, params, headers):
+        if "coingecko" in url:
+            return {"bitcoin": {"usd": 0.5}}     # below the $1k sanity floor
+        if "coinbase" in url:
+            return CB
+        raise AssertionError("should not reach kraken")
+    assert fetch_spot_resilient(get) == (64000.5, "coinbase")
+
+
+def test_all_implausible_raises():
+    def get(url, params, headers):
+        return {"bitcoin": {"usd": 1.0}, "data": {"amount": "1.0"},
+                "result": {"XXBTZUSD": {"c": ["1.0", "1"]}}}
+    with pytest.raises(RuntimeError):
+        fetch_spot_resilient(get, last_close=65000.0)

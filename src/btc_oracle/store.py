@@ -79,11 +79,18 @@ def table_names(conn: sqlite3.Connection) -> set[str]:
 
 def insert_prices(conn: sqlite3.Connection, rows) -> int:
     """rows: iterable of (source, interval, ts, open, high, low, close, volume).
-    Returns the number of newly inserted rows (duplicates ignored)."""
+    UPSERTS on (source, interval, ts): re-fetching a still-forming daily candle
+    OVERWRITES the prior (often partial) values with the latest, instead of
+    freezing the day's close at its first intraday reading (which previously
+    poisoned both the vol inputs and the realized price used for scoring).
+    Returns the number of rows inserted-or-updated."""
     cur = conn.executemany(
-        "INSERT OR IGNORE INTO price_history "
+        "INSERT INTO price_history "
         "(source, interval, ts, open, high, low, close, volume) "
-        "VALUES (?,?,?,?,?,?,?,?)",
+        "VALUES (?,?,?,?,?,?,?,?) "
+        "ON CONFLICT(source, interval, ts) DO UPDATE SET "
+        "open=excluded.open, high=excluded.high, low=excluded.low, "
+        "close=excluded.close, volume=excluded.volume",
         list(rows),
     )
     conn.commit()
@@ -176,7 +183,7 @@ def get_scored_detail(conn, horizon: str):
         "f.p_up, f.central, f.sigma_h, f.mu_h, f.conf_level, "
         "f.baseline_p_up, f.baseline_central, f.baseline_sigma_h, r.spot_at_issue "
         "FROM scores s JOIN forecasts f ON f.forecast_id = s.forecast_id "
-        "JOIN runs r ON r.run_id = f.run_id WHERE s.horizon = ? ORDER BY s.resolved_at DESC",
+        "JOIN runs r ON r.run_id = f.run_id WHERE s.horizon = ? ORDER BY f.target_at DESC",
         (horizon,),
     ).fetchall()
 
@@ -210,6 +217,16 @@ def insert_score(conn, s: dict) -> None:
 
 def get_latest_run(conn):
     return conn.execute("SELECT * FROM runs ORDER BY run_at DESC LIMIT 1").fetchone()
+
+
+def get_latest_run_with_forecasts(conn):
+    """The newest run that actually HAS forecasts — so a half-written/failed run
+    (a runs row with zero forecasts) never surfaces as a live, empty forecast."""
+    return conn.execute(
+        "SELECT r.* FROM runs r WHERE EXISTS "
+        "(SELECT 1 FROM forecasts f WHERE f.run_id = r.run_id) "
+        "ORDER BY r.run_at DESC LIMIT 1"
+    ).fetchone()
 
 
 def get_forecasts_for_run(conn, run_id: str):

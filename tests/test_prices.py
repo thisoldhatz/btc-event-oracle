@@ -33,3 +33,15 @@ def test_fetch_spot_reads_coingecko_shape():
         assert params["ids"] == "bitcoin"
         return {"bitcoin": {"usd": 64250.5}}
     assert fetch_spot(fake_get) == 64250.5
+
+
+class BoomExchange:
+    """A ccxt-like exchange whose OHLCV endpoint always errors."""
+    def fetch_ohlcv(self, *a, **k):
+        raise RuntimeError("exchange down")
+
+
+def test_safe_backfill_swallows_exchange_errors(mem_db):
+    # a transient OHLCV outage must NOT abort the hourly run
+    from btc_oracle.prices import safe_backfill
+    assert safe_backfill(mem_db, BoomExchange(), source="coinbase", timeframe="1d") == 0
