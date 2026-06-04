@@ -146,9 +146,13 @@ def insert_forecast(conn, *, run_id, target_at, forecast, rationale, drift_mode)
         "drift_mode, drift_adj_bps, vol_mult, skew_adj, rationale, resolved) "
         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)",
         (forecast_id, run_id, f.horizon, target_at, f.central, f.lower, f.upper,
-         f.conf_level, f.p_up, f.mu_h, f.sigma_h, f.confidence_label, f.band_width_pct,
-         f.baseline_central, f.baseline_p_up, f.baseline_sigma_h, f.vol_model,
-         f.vol_window, drift_mode, f.drift_adj_bps, f.vol_mult, f.skew_adj, rationale),
+         f.conf_level, f.p_up, f.mu_h, f.sigma_h,
+         getattr(f, "confidence_label", None), getattr(f, "band_width_pct", None),
+         getattr(f, "baseline_central", None), getattr(f, "baseline_p_up", None),
+         getattr(f, "baseline_sigma_h", None), f.vol_model,
+         f.vol_window, drift_mode,
+         getattr(f, "drift_adj_bps", None), getattr(f, "vol_mult", None),
+         getattr(f, "skew_adj", None), rationale),
     )
     conn.commit()
     return forecast_id
@@ -156,10 +160,24 @@ def insert_forecast(conn, *, run_id, target_at, forecast, rationale, drift_mode)
 
 def get_unresolved_matured(conn, now_iso: str):
     return conn.execute(
-        "SELECT f.forecast_id, f.horizon, f.target_at, f.central, f.lower, f.upper, "
-        "f.p_up, r.spot_at_issue FROM forecasts f JOIN runs r ON f.run_id = r.run_id "
+        "SELECT f.forecast_id, f.horizon, f.target_at, f.central, f.lower, f.upper, f.p_up, "
+        "f.mu_h, f.sigma_h, f.conf_level, f.baseline_central, f.baseline_p_up, f.baseline_sigma_h, "
+        "r.spot_at_issue FROM forecasts f JOIN runs r ON f.run_id = r.run_id "
         "WHERE f.resolved = 0 AND f.target_at <= ? ORDER BY f.target_at ASC",
         (now_iso,),
+    ).fetchall()
+
+
+def get_scored_detail(conn, horizon: str):
+    """Everything needed to aggregate rich scores for one horizon, newest-resolved first."""
+    return conn.execute(
+        "SELECT s.realized_price, s.up_outcome, s.covered, s.crps, s.crps_rw, s.pit, "
+        "s.brier, s.brier_base, s.ape, s.resolved_at, "
+        "f.p_up, f.central, f.sigma_h, f.mu_h, f.conf_level, "
+        "f.baseline_p_up, f.baseline_central, f.baseline_sigma_h, r.spot_at_issue "
+        "FROM scores s JOIN forecasts f ON f.forecast_id = s.forecast_id "
+        "JOIN runs r ON r.run_id = f.run_id WHERE s.horizon = ? ORDER BY s.resolved_at DESC",
+        (horizon,),
     ).fetchall()
 
 

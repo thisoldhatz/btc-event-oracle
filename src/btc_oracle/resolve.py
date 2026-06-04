@@ -21,7 +21,7 @@ def resolve_matured(conn, now_iso: str, source: str = "coinbase", interval: str 
             continue
         s = score_forecast(p_up=row["p_up"], central=row["central"], lower=row["lower"],
                            upper=row["upper"], spot_at_issue=row["spot_at_issue"],
-                           realized=realized)
+                           realized=realized, mu_h=row["mu_h"], sigma_h=row["sigma_h"])
         s.update({"forecast_id": row["forecast_id"], "horizon": row["horizon"],
                   "resolved_at": now_iso, "realized_price": realized})
         insert_score(conn, s)

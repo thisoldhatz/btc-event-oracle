@@ -46,3 +46,25 @@ def test_skips_when_no_price_yet(mem_db):
     out = resolve_matured(mem_db, "2026-06-10T00:00:00+00:00")
     assert out == []
     assert get_scores(mem_db, "1w") == []
+
+
+# Task 2 (Phase C) additions
+from btc_oracle.store import get_scored_detail
+
+
+def test_resolution_persists_crps(mem_db):
+    from datetime import datetime, timezone
+    from btc_oracle.store import insert_run, insert_forecast, insert_prices
+    from btc_oracle.baseline import forecast_from_sigma_h
+    target = datetime(2026, 6, 8, tzinfo=timezone.utc)
+    insert_prices(mem_db, [("coinbase", "1d", target.timestamp(), 0, 0, 0, 71000.0, 0)])
+    rid = insert_run(mem_db, run_at="2026-06-01T00:00:00+00:00", spot_at_issue=65000.0,
+                     spot_source="cg", model_id="m", prompt_version="v", engine_version="e", llm_applied=False)
+    f = forecast_from_sigma_h(spot=65000.0, sigma_h=0.06, horizon="1w", horizon_days=7,
+                              mu_daily=0.0, conf_level=0.60, vol_model="gjr-garch", vol_window=300)
+    insert_forecast(mem_db, run_id=rid, target_at=target.isoformat(), forecast=f,
+                    rationale="r", drift_mode="zero")
+    from btc_oracle.resolve import resolve_matured
+    resolve_matured(mem_db, "2026-06-10T00:00:00+00:00")
+    detail = get_scored_detail(mem_db, "1w")
+    assert detail[0]["crps"] is not None and detail[0]["crps"] > 0

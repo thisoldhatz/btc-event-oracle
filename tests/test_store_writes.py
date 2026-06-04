@@ -123,3 +123,28 @@ def test_link_forecast_event_is_idempotent(mem_db):
     link_forecast_event(mem_db, "f1", eid)  # duplicate -> ignored
     n = mem_db.execute("SELECT COUNT(*) c FROM forecast_events").fetchone()["c"]
     assert n == 1
+
+
+# Task 2 (Phase C) additions
+from btc_oracle.store import get_scored_detail
+
+
+def test_get_unresolved_matured_includes_vol_and_baseline(mem_db):
+    _seed_forecast(mem_db, run_at="2026-06-01T00:00:00+00:00",
+                   target_at="2026-06-08T00:00:00+00:00", spot=65000.0)
+    rows = get_unresolved_matured(mem_db, "2026-06-10T00:00:00+00:00")
+    assert "mu_h" in rows[0].keys() and "sigma_h" in rows[0].keys()
+    assert "baseline_central" in rows[0].keys() and "conf_level" in rows[0].keys()
+
+
+def test_get_scored_detail_returns_joined_rows(mem_db):
+    _, fid = _seed_forecast(mem_db, run_at="t", target_at="t2", spot=65000.0)
+    insert_score(mem_db, {"forecast_id": fid, "horizon": "1w", "resolved_at": "t3",
+                          "realized_price": 66000.0, "up_outcome": 1, "brier": 0.16,
+                          "brier_base": 0.25, "bss": 0.36, "ae": 1000.0, "ape": 1.5,
+                          "mae_ratio": 1.0, "covered": 1, "crps": 0.02, "crps_rw": 0.03, "pit": 0.6})
+    rows = get_scored_detail(mem_db, "1w")
+    assert len(rows) == 1
+    r = rows[0]
+    assert r["realized_price"] == 66000.0 and r["crps"] == 0.02
+    assert "baseline_p_up" in r.keys() and "spot_at_issue" in r.keys() and "conf_level" in r.keys()
