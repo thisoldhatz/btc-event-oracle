@@ -1,4 +1,29 @@
-from btc_oracle.scoring import score_forecast
+import math
+from btc_oracle.scoring import crps_normal, score_forecast
+
+
+def test_crps_normal_basic():
+    # CRPS of a point forecast (sigma->0) is the absolute error
+    assert abs(crps_normal(2.0, 0.0, 1e-9) - 2.0) < 1e-3
+    # CRPS is non-negative and finite
+    c = crps_normal(0.05, 0.0, 0.1)
+    assert c > 0 and math.isfinite(c)
+
+
+def test_score_forecast_adds_crps_and_pit_when_vol_given():
+    s = score_forecast(p_up=0.6, central=108.0, lower=95.0, upper=120.0,
+                       spot_at_issue=100.0, realized=110.0, mu_h=0.0, sigma_h=0.1)
+    x = math.log(110.0 / 100.0)
+    assert abs(s["crps_rw"] - abs(x)) < 1e-9        # RW = point 0-change -> |log return|
+    assert s["crps"] is not None and s["crps"] > 0
+    assert 0.0 <= s["pit"] <= 1.0
+
+
+def test_score_forecast_crps_none_without_vol():
+    s = score_forecast(p_up=0.6, central=108.0, lower=95.0, upper=120.0,
+                       spot_at_issue=100.0, realized=110.0)
+    assert s["crps"] is None and s["pit"] is None     # backward compatible
+    assert s["brier"] == (0.6 - 1) ** 2
 
 
 def test_up_move_scores():
