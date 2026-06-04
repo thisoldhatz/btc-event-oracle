@@ -1,6 +1,56 @@
 {
   "timeline": [
     {
+      "run_at": "2026-06-04T01:59:15.030889+00:00",
+      "p_up": 0.49226637729996653,
+      "central": 62057.84338492817,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear (FNG=12) with rising implied vol (DVOL +1.8 to 51.3%) and slightly crowded longs (funding +0.01%) point to near-term downside pressure and elevated uncertainty, justifying a modest negative drift tilt and vol expansion at the 1w horizon; however, extreme fear readings historically act as a mild mean-reversion signal at the 1m and 1y horizons, warranting a small positive drift offset there. Vol multipliers are raised across all horizons reflecting the rising DVOL environment, with the most pronounced widening at 1m. Skew is modestly negative short-term (demand for downside protection) and near-neutral long-term. All adjustments are kept small given near-random-walk dynamics."
+    },
+    {
+      "run_at": "2026-06-04T01:51:38.398804+00:00",
+      "p_up": 0.49226637729996653,
+      "central": 62392.341261614805,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear (FNG=12) is a mild contrarian bullish signal at longer horizons but signals near-term selling pressure and forced deleveraging risk at shorter horizons; rising implied vol (DVOL +1.19 to 50.7%) warrants modest band widening (vol_mult 1.10\u20131.20) across all horizons; funding slightly positive at +0.01% suggests mild long crowding but is not extreme, adding a small negative skew at 1w/1m reflecting downside tail risk; the 1y drift receives a small positive nudge as historically deep Fear readings precede mean-reversion recoveries over multi-month windows, though all adjustments are kept small given near-random-walk behavior."
+    },
+    {
+      "run_at": "2026-06-04T01:10:04.596071+00:00",
+      "p_up": 0.5062413055235299,
+      "central": 63379.34766855531,
+      "drift_adj_bps": 10.0,
+      "vol_mult": 0.95,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear (FNG=12) historically tilts toward mean-reversion/contrarian upside at medium horizons, justifying a small positive drift adjustment; funding is nearly neutral (+0.01%) so no crowding signal worth amplifying; implied vol (DVOL=49.3%) is falling, supporting a modest vol compression (mult <1.0) at short horizons, consistent with calmer near-term realized vol expectations; skew is nudged slightly positive (contrarian bounce premium) across all horizons, but all adjustments remain well within conservative bounds given the near-random-walk prior and low overall signal confidence."
+    },
+    {
+      "run_at": "2026-06-04T00:20:37.545605+00:00",
+      "p_up": 0.5051994545652305,
+      "central": 64276.400557481626,
+      "drift_adj_bps": 8.0,
+      "vol_mult": 1.05,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear (FNG=12) is a mild contrarian positive signal historically associated with mean-reversion bounces, warranting a small positive drift adjustment across all horizons; however, the near-neutral funding rate (0.01% per 8h, longs marginally pay) suggests no significant crowding excess to unwind, so downside skew is kept modest. Volatility multipliers are nudged slightly above 1.0 to reflect elevated uncertainty at sentiment extremes. All adjustments remain well within caps given the near-random-walk nature of BTC at short horizons and the ambiguity of the current macro environment."
+    },
+    {
+      "run_at": "2026-06-03T23:40:10.054789+00:00",
+      "p_up": 0.4910695817507632,
+      "central": 64130.73171926085,
+      "drift_adj_bps": -15.0,
+      "vol_mult": 1.15,
+      "confidence_label": "low",
+      "llm_applied": true,
+      "rationale": "Extreme Fear at 11/100 (down 12 pts) signals capitulation-adjacent sentiment which historically can precede bounces but also sustained drawdowns; the near-zero funding rate (+0.01%) indicates the perp market is nearly flat/slightly long-biased rather than heavily crowded, reducing squeeze risk but not providing a bullish catalyst; combined, these signals warrant a modest negative drift adjustment and moderately wider bands to reflect elevated realized volatility risk, with a slight negative skew reflecting downside tail exposure, while keeping all adjustments small given Bitcoin's near-random-walk behavior at short horizons."
+    },
+    {
       "run_at": "2026-06-03T22:50:36.111350+00:00",
       "p_up": 0.4910695817507632,
       "central": 64793.736465887494,

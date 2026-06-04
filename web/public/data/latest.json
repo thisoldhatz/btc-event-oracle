@@ -1,60 +1,60 @@
 {
-  "run_at": "2026-06-03T22:50:36.111350+00:00",
-  "spot": 64891.0,
+  "run_at": "2026-06-04T01:59:15.030889+00:00",
+  "spot": 62151.0,
   "llm_applied": true,
   "model_id": "claude-sonnet-4-6",
   "forecasts": [
     {
       "horizon": "1m",
-      "target_at": "2026-07-03T22:50:36.111350+00:00",
-      "central": 64696.618717709374,
-      "lower": 57276.634601517086,
-      "upper": 73077.83536209716,
+      "target_at": "2026-07-04T01:59:15.030889+00:00",
+      "central": 62275.42638490945,
+      "lower": 54526.8193802416,
+      "upper": 71125.15960957728,
       "conf_level": 0.6,
-      "p_up": 0.4917317811625907,
+      "p_up": 0.5050536408410209,
       "confidence_label": "low",
-      "band_width_pct": 0.243503733346382,
-      "drift_adj_bps": -30.0,
-      "vol_mult": 1.2,
-      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulation-adjacent sentiment, historically a mild contrarian positive but also consistent with continued selling pressure in the near term; funding rates are near neutral (0.01%) indicating the crowded-long concern is minimal; with sentiment this depressed, downside skew and modest volatility widening are warranted across all horizons, but adjustments remain small given near-random-walk dynamics and the possibility that extreme fear marks a local bottom."
+      "band_width_pct": 0.26706473313922036,
+      "drift_adj_bps": 20.0,
+      "vol_mult": 1.18,
+      "rationale": "Extreme Fear (FNG=12) with rising implied vol (DVOL +1.8 to 51.3%) and slightly crowded longs (funding +0.01%) point to near-term downside pressure and elevated uncertainty, justifying a modest negative drift tilt and vol expansion at the 1w horizon; however, extreme fear readings historically act as a mild mean-reversion signal at the 1m and 1y horizons, warranting a small positive drift offset there. Vol multipliers are raised across all horizons reflecting the rising DVOL environment, with the most pronounced widening at 1m. Skew is modestly negative short-term (demand for downside protection) and near-neutral long-term. All adjustments are kept small given near-random-walk dynamics."
     },
     {
       "horizon": "1w",
-      "target_at": "2026-06-10T22:50:36.111350+00:00",
-      "central": 64793.736465887494,
-      "lower": 61241.062555109114,
-      "upper": 68552.5056237065,
+      "target_at": "2026-06-11T01:59:15.030889+00:00",
+      "central": 62057.84338492817,
+      "lower": 58145.46526829658,
+      "upper": 66233.4699330044,
       "conf_level": 0.6,
-      "p_up": 0.4910695817507632,
+      "p_up": 0.49226637729996653,
       "confidence_label": "low",
-      "band_width_pct": 0.11267268293904217,
+      "band_width_pct": 0.13013474706292438,
       "drift_adj_bps": -15.0,
       "vol_mult": 1.15,
-      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulation-adjacent sentiment, historically a mild contrarian positive but also consistent with continued selling pressure in the near term; funding rates are near neutral (0.01%) indicating the crowded-long concern is minimal; with sentiment this depressed, downside skew and modest volatility widening are warranted across all horizons, but adjustments remain small given near-random-walk dynamics and the possibility that extreme fear marks a local bottom."
+      "rationale": "Extreme Fear (FNG=12) with rising implied vol (DVOL +1.8 to 51.3%) and slightly crowded longs (funding +0.01%) point to near-term downside pressure and elevated uncertainty, justifying a modest negative drift tilt and vol expansion at the 1w horizon; however, extreme fear readings historically act as a mild mean-reversion signal at the 1m and 1y horizons, warranting a small positive drift offset there. Vol multipliers are raised across all horizons reflecting the rising DVOL environment, with the most pronounced widening at 1m. Skew is modestly negative short-term (demand for downside protection) and near-neutral long-term. All adjustments are kept small given near-random-walk dynamics."
     },
     {
       "horizon": "1y",
-      "target_at": "2027-06-03T22:50:36.111350+00:00",
-      "central": 64761.34769552191,
-      "lower": 43869.25208108744,
-      "upper": 95603.00110856866,
+      "target_at": "2027-06-04T01:59:15.030889+00:00",
+      "central": 62368.90961938457,
+      "lower": 40696.868429076174,
+      "upper": 95581.82330146579,
       "conf_level": 0.6,
-      "p_up": 0.4982759367182476,
+      "p_up": 0.502752638369905,
       "confidence_label": "low",
-      "band_width_pct": 0.7972407425911331,
-      "drift_adj_bps": -20.0,
+      "band_width_pct": 0.8830904550592849,
+      "drift_adj_bps": 35.0,
       "vol_mult": 1.1,
-      "rationale": "Extreme Fear at 11/100 (down 12 points) signals capitulation-adjacent sentiment, historically a mild contrarian positive but also consistent with continued selling pressure in the near term; funding rates are near neutral (0.01%) indicating the crowded-long concern is minimal; with sentiment this depressed, downside skew and modest volatility widening are warranted across all horizons, but adjustments remain small given near-random-walk dynamics and the possibility that extreme fear marks a local bottom."
+      "rationale": "Extreme Fear (FNG=12) with rising implied vol (DVOL +1.8 to 51.3%) and slightly crowded longs (funding +0.01%) point to near-term downside pressure and elevated uncertainty, justifying a modest negative drift tilt and vol expansion at the 1w horizon; however, extreme fear readings historically act as a mild mean-reversion signal at the 1m and 1y horizons, warranting a small positive drift offset there. Vol multipliers are raised across all horizons reflecting the rising DVOL environment, with the most pronounced widening at 1m. Skew is modestly negative short-term (demand for downside protection) and near-neutral long-term. All adjustments are kept small given near-random-walk dynamics."
     }
   ],
   "signals": [
     {
       "source": "fng",
       "signal": "fear_greed",
-      "value": 11.0,
-      "delta": -12.0,
-      "interpretation": "Fear & Greed 11/100 (Extreme Fear), -12 vs prior reading",
-      "observed_at": "2026-06-03T00:00:00+00:00"
+      "value": 12.0,
+      "delta": 1.0,
+      "interpretation": "Fear & Greed 12/100 (Extreme Fear), +1 vs prior reading",
+      "observed_at": "2026-06-04T00:00:00+00:00"
     },
     {
       "source": "funding",
@@ -62,18 +62,32 @@
       "value": 0.0001,
       "delta": null,
       "interpretation": "Perp funding +0.0100% \u2014 longs pay shorts (crowded long)",
-      "observed_at": "2026-06-04T00:00:00+00:00"
+      "observed_at": "2026-06-04T08:00:00+00:00"
     },
     {
       "source": "oi",
       "signal": "open_interest",
-      "value": 7544.675369077285,
+      "value": 8025.205689661552,
       "delta": null,
-      "interpretation": "BTC perp open interest 7,545 BTC",
-      "observed_at": "2026-06-03T22:50:38.389000+00:00"
+      "interpretation": "BTC perp open interest 8,025 BTC",
+      "observed_at": "2026-06-04T01:59:18.339000+00:00"
+    },
+    {
+      "source": "dvol",
+      "signal": "implied_vol",
+      "value": 51.29,
+      "delta": 1.7999999999999972,
+      "interpretation": "Deribit implied vol (DVOL) 51.3% annualized, rising (more fear/uncertainty)",
+      "observed_at": "2026-06-04T01:00:00+00:00"
     }
   ],
   "news": [
+    {
+      "title": "Bitcoin tanks below $63,000 for the first time since February as price selloff deepens",
+      "url": "https://www.coindesk.com/markets/2026/06/04/bitcoin-selloff-continues-as-prices-slide-below-usd63-000-for-the-first-time-since-february",
+      "source": "CoinDesk",
+      "published_at": "2026-06-04T01:30:53+00:00"
+    },
     {
       "title": "SpaceX targets record $75 billion IPO as bitcoin treasury and liquidity risks draw focus",
       "url": "https://www.coindesk.com/markets/2026/06/03/spacex-targets-record-usd75-billion-ipo-as-bitcoin-treasury-and-liquidity-risks-draw-focus",
@@ -139,12 +153,27 @@
       "url": "https://www.coindesk.com/markets/2026/06/03/bitcoin-s-lack-of-fresh-investors-matters-more-than-strategy-s-sale-citi-says",
       "source": "CoinDesk",
       "published_at": "2026-06-03T13:29:45+00:00"
+    }
+  ],
+  "regime": {
+    "label": "normal",
+    "percentile": 0.5017421602787456
+  },
+  "markets": [
+    {
+      "question": "Will Bitcoin hit $150k by June 30, 2026?",
+      "yes_prob": 0.0035,
+      "end_date": "2026-07-01T04:00:00Z"
     },
     {
-      "title": "Bitwise model puts bitcoin fair value at $224,000 as sovereign-default hedge",
-      "url": "https://www.coindesk.com/markets/2026/06/03/bitwise-model-puts-bitcoin-fair-value-at-usd224-000-as-sovereign-default-hedge",
-      "source": "CoinDesk",
-      "published_at": "2026-06-03T13:26:02+00:00"
+      "question": "Will the price of Bitcoin be above $62,000 on June 4?",
+      "yes_prob": 0.5525,
+      "end_date": "2026-06-04T16:00:00Z"
+    },
+    {
+      "question": "Will Bitcoin reach $100,000 in June?",
+      "yes_prob": 0.0035,
+      "end_date": "2026-07-01T04:00:00Z"
     }
   ]
 }
