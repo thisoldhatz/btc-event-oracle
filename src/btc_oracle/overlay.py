@@ -6,7 +6,6 @@ from .types import HORIZONS, BaselineForecast
 DRIFT_CAP_BPS = {"1w": 50.0, "1m": 150.0, "1y": 100.0}   # spec §14 #6
 VOL_MULT_BOUNDS = (0.8, 1.5)
 PUP_BOUNDS = (0.30, 0.70)
-SKEW_BOUNDS = (-0.2, 0.2)
 _VALID_CONF = {"low", "medium", "high"}
 
 
@@ -30,7 +29,6 @@ def parse_and_clamp(payload) -> dict:
         cap = DRIFT_CAP_BPS[h]
         drift = _clamp(float(a.get("drift_adj_bps", 0.0)), -cap, cap)
         vol_mult = _clamp(float(a.get("vol_mult", 1.0)), *VOL_MULT_BOUNDS)
-        skew = _clamp(float(a.get("skew_adj", 0.0)), *SKEW_BOUNDS)
         override = a.get("p_up_override", None)
         if override is not None:
             override = float(override)
@@ -39,7 +37,7 @@ def parse_and_clamp(payload) -> dict:
         conf = a.get("confidence", "low")
         if conf not in _VALID_CONF:
             conf = "low"
-        out[h] = {"drift_adj_bps": drift, "vol_mult": vol_mult, "skew_adj": skew,
+        out[h] = {"drift_adj_bps": drift, "vol_mult": vol_mult,
                   "p_up_override": override, "confidence": conf}
     return {"horizons": out,
             "rationale": str(payload.get("rationale", "")),
@@ -76,7 +74,9 @@ class EnrichedForecast:
 
 def apply_overlay(baseline: BaselineForecast, adj: dict, llm_applied: bool) -> EnrichedForecast:
     """Apply a single clamped horizon adjustment to a baseline forecast.
-    MVP applies drift + vol only; skew_adj is recorded but not yet applied."""
+    The overlay tunes drift + vol only; the predictive band stays symmetric. Skew
+    is NOT modeled, so we no longer ask the LLM for it (that was a dead knob); the
+    skew_adj field is kept at 0.0 purely for schema/back-compat."""
     mu2 = baseline.mu_h + float(adj["drift_adj_bps"]) / 10_000.0
     sigma2 = baseline.sigma_h * float(adj["vol_mult"])
     central = baseline.spot * math.exp(mu2)
@@ -97,13 +97,13 @@ def apply_overlay(baseline: BaselineForecast, adj: dict, llm_applied: bool) -> E
         baseline_central=baseline.central, baseline_p_up=baseline.p_up,
         baseline_sigma_h=baseline.sigma_h,
         drift_adj_bps=float(adj["drift_adj_bps"]), vol_mult=float(adj["vol_mult"]),
-        skew_adj=float(adj["skew_adj"]), llm_applied=llm_applied,
+        skew_adj=0.0, llm_applied=llm_applied,
     )
 
 
 import json as _json
 
-_NEUTRAL = {"drift_adj_bps": 0.0, "vol_mult": 1.0, "skew_adj": 0.0,
+_NEUTRAL = {"drift_adj_bps": 0.0, "vol_mult": 1.0,
             "p_up_override": None, "confidence": "low"}
 _FALLBACK_RATIONALE = "Baseline only — LLM adjustment unavailable this run."
 

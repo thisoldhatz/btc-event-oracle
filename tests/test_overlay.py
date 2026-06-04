@@ -32,7 +32,6 @@ def test_out_of_bounds_are_clamped():
     assert adj["horizons"]["1y"]["drift_adj_bps"] == DRIFT_CAP_BPS["1y"]       # +100
     assert adj["horizons"]["1w"]["vol_mult"] == VOL_MULT_BOUNDS[1]            # 1.5
     assert adj["horizons"]["1m"]["vol_mult"] == VOL_MULT_BOUNDS[0]            # 0.8
-    assert -0.2 <= adj["horizons"]["1w"]["skew_adj"] <= 0.2
     # p_up_override above the [0.30,0.70] ceiling is rejected -> None
     assert adj["horizons"]["1w"]["p_up_override"] is None
 

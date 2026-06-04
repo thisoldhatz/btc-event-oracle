@@ -5,7 +5,7 @@ SYSTEM_PROMPT = (
     "for 1-week, 1-month, and 1-year horizons, plus a few condensed world-event signals. "
     "Bitcoin is near-random-walk at short horizons, so your adjustments MUST be small. "
     "Return ONLY JSON of the form "
-    '{"horizons":{"1w":{"drift_adj_bps":<int>,"vol_mult":<0.8-1.5>,"skew_adj":<-0.2..0.2>,'
+    '{"horizons":{"1w":{"drift_adj_bps":<int>,"vol_mult":<0.8-1.5>,'
     '"p_up_override":<null or 0.30-0.70>,"confidence":"low|medium|high"},"1m":{...},"1y":{...}},'
     '"rationale":"<one short paragraph>","event_refs":[]}. '
     "drift_adj_bps is capped at +/-50 (1w), +/-150 (1m), +/-100 (1y); values outside bounds will be clamped. "
