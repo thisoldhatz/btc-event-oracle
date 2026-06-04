@@ -1,4 +1,6 @@
 # tests/test_feed.py
+import xml.etree.ElementTree as ET
+
 from btc_oracle.feed import build_rss
 
 LATEST = {"run_at": "2026-06-03T20:00:00+00:00", "regime": {"label": "elevated"},
@@ -15,8 +17,17 @@ def test_build_rss_has_items_per_forecast():
     assert xml.count("<item>") == 2
     assert "1-week" in xml or "1w" in xml
     assert "BTC Event Oracle" in xml
+    # Structural validity: must parse as well-formed XML
+    ET.fromstring(xml)
 
 
 def test_build_rss_empty_is_valid():
     xml = build_rss({"forecasts": []})
     assert "<rss" in xml and xml.count("<item>") == 0
+
+
+def test_build_rss_p_up_none_does_not_raise():
+    """build_rss must not raise when p_up is None (SQLite NULL -> dict value None)."""
+    xml = build_rss({"forecasts": [{"horizon": "1w", "central": 60000.0, "p_up": None}]})
+    assert xml.count("<item>") == 1
+    ET.fromstring(xml)

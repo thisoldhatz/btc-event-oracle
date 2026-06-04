@@ -28,7 +28,7 @@ def build_rss(latest: dict, base: str = "https://vadym.online/btc") -> str:
     for f in latest.get("forecasts") or []:
         h = f.get("horizon", "?")
         label = _LABEL.get(h, h)
-        p = round(float(f.get("p_up", 0.5)) * 100)
+        p = round(float(f.get("p_up") or 0.5) * 100)
         title = f"BTC {label} forecast: {_usd(f.get('central'))} (P(up) {p}%)"
         desc = (f"Range {_usd(f.get('lower'))} to {_usd(f.get('upper'))}."
                 + (f" {regime} volatility regime." if regime else ""))
