@@ -98,6 +98,39 @@ def _decomposition(rows, bins=5):
     return (reliability, resolution, uncertainty)
 
 
+def _calibration(rows, rel_bins=10, pit_bins=10):
+    """Chartable calibration data the dashboard currently throws away:
+    (1) reliability points — mean predicted P(up) vs observed up-rate per bin
+        (only populated bins are emitted, so the P(up) clamp's empty extreme bins
+        never read as miscalibration); plot vs the 45-deg line.
+    (2) a PIT histogram from the stored probability-integral-transform values
+        (distribution calibration — flat == well-calibrated), with a chi-square
+        uniformity statistic and the mean PIT."""
+    reliability = []
+    for k in range(rel_bins):
+        lo, hi = k / rel_bins, (k + 1) / rel_bins
+        grp = [r for r in rows if (lo <= r["p_up"] < hi) or (k == rel_bins - 1 and r["p_up"] == 1.0)]
+        if not grp:
+            continue
+        nk = len(grp)
+        reliability.append({"p": sum(r["p_up"] for r in grp) / nk,
+                            "o": sum(r["up_outcome"] for r in grp) / nk, "n": nk})
+    pits = [r["pit"] for r in rows if r["pit"] is not None]
+    counts = [0] * pit_bins
+    for p in pits:
+        counts[min(max(int(p * pit_bins), 0), pit_bins - 1)] += 1
+    pit_hist = ([{"lo": k / pit_bins, "hi": (k + 1) / pit_bins,
+                  "count": c, "freq": c / len(pits)} for k, c in enumerate(counts)]
+                if pits else [])
+    pit_chi2 = None
+    if len(pits) >= pit_bins:
+        exp = len(pits) / pit_bins
+        pit_chi2 = sum((c - exp) ** 2 / exp for c in counts)
+    return {"reliability": reliability, "pit_hist": pit_hist,
+            "mean_pit": (sum(pits) / len(pits)) if pits else None,
+            "pit_n": len(pits), "pit_chi2": pit_chi2}
+
+
 def _ab(rows):
     """Overlay (applied) vs baseline (pre-LLM) on Brier + CRPS, using stored baseline_* fields."""
     n = len(rows)
@@ -129,6 +162,7 @@ def build_scores(conn) -> dict:
         rel, res, unc = _decomposition(rows)
         agg.update({
             "reliability": rel, "resolution": res, "uncertainty": unc,
+            "calibration": _calibration(rows),
             "windows": {"all": _window(rows), "last30": _window(rows[:30]), "last90": _window(rows[:90])},
             "ab": _ab(rows),
         })

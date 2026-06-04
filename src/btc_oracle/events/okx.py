@@ -20,7 +20,10 @@ def parse_funding(payload: dict) -> Event | None:
         return None
     rate = float(row["fundingRate"])
     side = "longs pay shorts (crowded long)" if rate > 0 else "shorts pay longs (crowded short)"
-    ts = row.get("fundingTime")
+    # Use the data timestamp `ts`, NOT `fundingTime` (which is the NEXT settlement —
+    # a FUTURE time that would make any staleness check think the signal is fresh
+    # forever). fundingTime stays in `raw`.
+    ts = row.get("ts")
     return Event(
         source="funding", signal="funding_rate", value=rate, delta=None,
         interpretation=f"Perp funding {rate * 100:+.4f}% — {side}",

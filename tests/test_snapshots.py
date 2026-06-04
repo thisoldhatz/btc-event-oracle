@@ -106,6 +106,19 @@ def test_build_scores_rich_aggregate(mem_db):
     assert sc["ab"]["model_brier"] < sc["ab"]["baseline_brier"]
 
 
+def test_build_scores_emits_calibration_data(mem_db):
+    for _ in range(12):
+        _resolved(mem_db, p_up=0.6, baseline_p_up=0.5, up_outcome=1)
+    cal = build_scores(mem_db)["1w"]["calibration"]
+    # reliability: all p_up=0.6 -> one populated bin, observed up-rate 1.0, n=12
+    assert len(cal["reliability"]) == 1
+    pt = cal["reliability"][0]
+    assert abs(pt["p"] - 0.6) < 1e-9 and pt["o"] == 1.0 and pt["n"] == 12
+    # PIT histogram: 10 bins, all stored pit=0.5 land in one bin; uniformity stat present
+    assert len(cal["pit_hist"]) == 10 and cal["pit_n"] == 12
+    assert cal["mean_pit"] == 0.5 and cal["pit_chi2"] is not None
+
+
 def test_bss_is_one_for_perfect_brier(mem_db):
     # regression: the falsy-guard used to null BSS when mean Brier was exactly 0.0
     _resolved(mem_db, p_up=1.0, baseline_p_up=0.5, up_outcome=1)   # brier=(1-1)^2=0

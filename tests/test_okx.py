@@ -1,7 +1,9 @@
 from btc_oracle.events.okx import parse_funding, parse_oi, fetch
+from btc_oracle.events.base import iso_from_ms
 
 FUNDING = {"code": "0", "data": [
-    {"instId": "BTC-USD-SWAP", "fundingRate": "0.0001", "fundingTime": "1780502400000"},
+    {"instId": "BTC-USD-SWAP", "fundingRate": "0.0001",
+     "fundingTime": "1780502400000", "ts": "1780509600000"},
 ]}
 OI = {"code": "0", "data": [
     {"instId": "BTC-USD-SWAP", "oi": "7516", "oiCcy": "7516.94", "ts": "1780509600000"},
@@ -13,7 +15,9 @@ def test_parse_funding_positive_is_crowded_long():
     assert e.source == "funding"
     assert abs(e.value - 0.0001) < 1e-12
     assert "long" in e.interpretation.lower()
-    assert e.observed_at.startswith("2026-")
+    # observed_at uses the data ts, NOT the future fundingTime (regression)
+    assert e.observed_at == iso_from_ms("1780509600000")
+    assert e.raw["fundingTime"] == "1780502400000"   # future settlement kept only in raw
 
 
 def test_parse_oi_uses_oiCcy():
