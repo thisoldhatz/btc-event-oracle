@@ -22,6 +22,8 @@ export interface Latest {
   forecasts: Forecast[];
   signals?: Signal[];
   news?: NewsItem[];
+  markets?: Market[];
+  regime?: Regime;
 }
 export interface HistPoint {
   run_at: string;
@@ -39,6 +41,14 @@ export interface ScoreH {
   bss?: number | null;
   mape?: number | null;
   coverage?: number;
+  crps?: number | null;
+  crpss?: number | null;
+  reliability?: number | null;
+  resolution?: number | null;
+  coverage_nominal?: number | null;
+  brier_ci?: number | null;
+  windows?: Record<"all" | "last30" | "last90", Partial<ScoreH>>;
+  ab?: { n: number; model_brier?: number | null; baseline_brier?: number | null; model_crps?: number | null; baseline_crps?: number | null };
 }
 export type Scores = Record<Horizon, ScoreH>;
 
@@ -83,4 +93,14 @@ export interface ResultItem {
 export interface Extras {
   timeline: TimelineItem[];
   results: ResultItem[];
+}
+
+export interface Market {
+  question: string;
+  yes_prob: number;
+  end_date: string | null;
+}
+export interface Regime {
+  label: string;
+  percentile: number;
 }

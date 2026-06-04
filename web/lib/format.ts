@@ -105,7 +105,16 @@ export function signalDisplay(s: Signal): SignalDisplay {
         label: "News tone", value: v.toFixed(2), delta,
         hint: s.interpretation, tone: v >= 0 ? "up" : "down",
       };
+    case "implied_vol":
+      return { label: "Implied vol", value: `${Math.round(v)}%`, delta,
+               hint: s.interpretation, tone: (s.delta ?? 0) > 0 ? "down" : "up" };
     default:
       return { label: s.signal, value: String(s.value ?? "—"), delta, hint: s.interpretation, tone: "neutral" };
   }
+}
+
+export function regimeNote(label: string): string {
+  if (label === "high") return "High-volatility regime — intervals widened (the model is less reliable in turbulence).";
+  if (label === "elevated") return "Elevated volatility — intervals modestly widened.";
+  return "";
 }

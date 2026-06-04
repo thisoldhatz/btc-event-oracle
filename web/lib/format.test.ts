@@ -82,3 +82,20 @@ describe("timeUntil", () => {
     expect(timeUntil("2026-06-02T00:00:00Z", now)).toBe("resolved");
   });
 });
+
+import { signalDisplay, regimeNote } from "@/lib/format";
+import type { Signal } from "@/lib/types";
+
+describe("DVOL + regime", () => {
+  it("labels the dvol implied-vol signal nicely", () => {
+    const s: Signal = { source: "dvol", signal: "implied_vol", value: 48.2, delta: -1.5, interpretation: "x", observed_at: "" };
+    const d = signalDisplay(s);
+    expect(d.label).toBe("Implied vol");
+    expect(d.value).toBe("48%");
+  });
+  it("regimeNote explains widening only when elevated/high", () => {
+    expect(regimeNote("normal")).toBe("");
+    expect(regimeNote("elevated").toLowerCase()).toContain("widened");
+    expect(regimeNote("high").toLowerCase()).toContain("widened");
+  });
+});
