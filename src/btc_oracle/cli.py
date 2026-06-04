@@ -15,6 +15,7 @@ from .regime import detect_regime
 from .types import HORIZONS
 from .prices import backfill, fetch_spot, fetch_spot_resilient
 from .events import collect_events, condense
+from .events.polymarket import fetch_markets
 from .overlay import run_overlay
 from .llm import make_claude_call
 
@@ -99,10 +100,11 @@ def cmd_run(settings):
                    if settings.anthropic_api_key else None)
     model_id = "claude-sonnet-4-6" if settings.anthropic_api_key else "baseline-only"
     news = news_to_dict(fetch_news(_httpx_get_text))
+    markets = fetch_markets(_httpx_get)
     now_iso = datetime.now(timezone.utc).isoformat()
     summary = run_once(conn, settings, now_iso=now_iso, spot=spot, http_get=_httpx_get,
                        claude_call=claude_call, out_dir=settings.snapshot_dir,
-                       model_id=model_id, news=news, spot_source=spot_source)
+                       model_id=model_id, news=news, spot_source=spot_source, markets=markets)
     print(f"run {summary['run_id'][:8]}: spot={spot:,.0f}({spot_source}) "
           f"forecasts={summary['forecasts']} events={summary['events']} "
           f"news={summary['news']} resolved={summary['resolved']} "

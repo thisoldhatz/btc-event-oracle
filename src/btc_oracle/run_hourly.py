@@ -6,7 +6,7 @@ from .snapshots import write_snapshots, event_to_signal
 
 
 def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir,
-             model_id="baseline-only", news=None, spot_source="coingecko"):
+             model_id="baseline-only", news=None, spot_source="coingecko", markets=None):
     """One full hourly cycle: build event-aware forecasts, persist them, resolve any
     matured prior forecasts, and emit JSON snapshots. Returns a summary dict."""
     from .cli import build_enriched_forecasts  # local import avoids a cli<->run_hourly cycle
@@ -34,7 +34,7 @@ def run_once(conn, settings, *, now_iso, spot, http_get, claude_call, out_dir,
 
     resolved = resolve_matured(conn, now_iso)
     signals = [event_to_signal(e) for e in events]
-    written = write_snapshots(conn, out_dir, signals=signals, news=news or [], regime=regime)
+    written = write_snapshots(conn, out_dir, signals=signals, news=news or [], regime=regime, markets=markets or [])
     return {"run_id": run_id, "forecasts": len(forecasts), "events": len(event_ids),
             "resolved": len(resolved), "llm_applied": llm_applied, "snapshots": written,
             "news": len(news or [])}

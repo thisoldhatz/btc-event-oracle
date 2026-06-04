@@ -19,6 +19,8 @@ def _http_get(url, params, headers):
         return {"code": "0", "data": [{"oi": "7516", "oiCcy": "59000", "ts": "1780509600000"}]}
     if "gdelt" in url:
         return {"timeline": [{"data": [{"date": "20260603T100000Z", "value": 2.0}]}]}
+    if "polymarket" in url:
+        return []
     raise AssertionError(url)
 
 

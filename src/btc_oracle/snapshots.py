@@ -18,18 +18,18 @@ def event_to_signal(e) -> dict:
 
 
 def build_latest(conn, signals: list | None = None, news: list | None = None,
-                 regime: dict | None = None) -> dict:
+                 regime: dict | None = None, markets: list | None = None) -> dict:
     _regime = regime or {"label": "normal", "percentile": 0.5}
     run = get_latest_run(conn)
     if run is None:
         return {"run_at": None, "spot": None, "llm_applied": False,
                 "model_id": None, "forecasts": [], "signals": signals or [],
-                "news": news or [], "regime": _regime}
+                "news": news or [], "regime": _regime, "markets": markets or []}
     forecasts = [{k: f[k] for k in _F_KEYS} for f in get_forecasts_for_run(conn, run["run_id"])]
     return {"run_at": run["run_at"], "spot": run["spot_at_issue"],
             "llm_applied": bool(run["llm_applied"]), "model_id": run["model_id"],
             "forecasts": forecasts, "signals": signals or [], "news": news or [],
-            "regime": _regime}
+            "regime": _regime, "markets": markets or []}
 
 
 def build_history(conn, limit: int = 1000) -> dict:
@@ -156,9 +156,10 @@ def build_extras(conn) -> dict:
 
 
 def write_snapshots(conn, out_dir: str, signals: list | None = None,
-                    news: list | None = None, regime: dict | None = None) -> list[str]:
+                    news: list | None = None, regime: dict | None = None,
+                    markets: list | None = None) -> list[str]:
     os.makedirs(out_dir, exist_ok=True)
-    payloads = {"latest.json": build_latest(conn, signals=signals, news=news, regime=regime),
+    payloads = {"latest.json": build_latest(conn, signals=signals, news=news, regime=regime, markets=markets),
                 "history.json": build_history(conn),
                 "scores.json": build_scores(conn),
                 "extras.json": build_extras(conn)}
