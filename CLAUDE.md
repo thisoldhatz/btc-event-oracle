@@ -23,17 +23,23 @@ advice" and has a `/guide` (plain-English explainer) and `/disclaimer` page.
 ## Architecture
 ```
 GitHub Actions (hourly cron, .github/workflows/hourly.yml)
-   └─ runs the Python engine (Claude API) → SQLite → writes latest/history/scores.json
-      └─ SFTP-pushes those 3 JSON files to the cPanel host: public_html/btc/data/
+   └─ runs the Python engine (Claude API) → SQLite → writes latest/history/scores/extras.json
+      └─ SFTP-pushes the JSON to the cPanel host: public_html/btc/data/
          └─ static Next.js dashboard (public_html/btc/) fetches /btc/data/*.json client-side
    └─ persists the SQLite forecast-history db on a single-commit 'state' branch
 ```
-- **Engine** = Python package `btc_oracle` under `src/`. Hybrid: quant baseline (EWMA volatility →
-  lognormal range + P(up)) that Claude nudges within hard clamps (drift ±50/150/100 bps, vol_mult
-  [0.8,1.5], P(up) [0.30,0.70]); **fully fail-soft** (falls back to baseline if Claude or any source
-  fails). Entry point: `python -m btc_oracle.cli run`.
+- **Engine** = Python package `btc_oracle` under `src/`. Hybrid: quant baseline = **GJR-GARCH** conditional
+  volatility (`garch.py`, mean-reverting multi-day term structure) with **EWMA fallback** (`returns.py`),
+  **regime detection** that widens intervals in turbulence (`regime.py`), lognormal range + P(up). Claude
+  nudges within hard clamps (drift ±50/150/100 bps, vol_mult [0.8,1.5], P(up) [0.30,0.70]); **fully
+  fail-soft**. Signals (`events/`): Fear&Greed, OKX funding+OI, Deribit DVOL, GDELT tone, RSS news.
+  Scoring (`scoring.py`/`resolve.py`): Brier+decomposition, **CRPS/CRPSS**, coverage, overlay-vs-baseline
+  A/B, rolling windows — all vs random walk. Also fetches a **Polymarket** markets feed. Entry: `python -m btc_oracle.cli run`.
 - **Dashboard** = Next.js 14 app in `web/` (App Router, TypeScript, Tailwind, Recharts), static-exported
-  with `basePath: '/btc'`. Live signals strip, RSS news feed, ticking price, 60s auto-refresh.
+  with `basePath: '/btc'`. Signals strip (+Fear&Greed dial, implied-vol), GARCH forecast cards with
+  countdowns, forecast-vs-actual chart, "why it moved", accuracy scorecard + **calibration/skill panel**,
+  **markets panel**, **"your call vs the model"** game, "did it call it" reveals, "changed its mind"
+  timeline, RSS news feed, ticking price, 60s auto-refresh. Pages: `/`, `/guide`, `/about`, `/disclaimer`.
 
 ## Repo layout
 - `src/btc_oracle/` — engine: `cli.py` (commands), `baseline.py`, `returns.py` (EWMA vol),
@@ -41,7 +47,7 @@ GitHub Actions (hourly cron, .github/workflows/hourly.yml)
   `prices.py` (ccxt/CoinGecko), `resolve.py` + `scoring.py` (grade matured forecasts vs random walk),
   `snapshots.py` (emit JSON), `run_hourly.py` (orchestrator), `events/` (adapters).
 - `web/` — the dashboard. `lib/` (typed data/format/hooks), `components/`, `app/`.
-- `tests/` — pytest (94 tests). `web/**/*.test.tsx` — vitest (27 tests).
+- `tests/` — pytest (~130 tests). `web/**/*.test.tsx` — vitest (~52 tests).
 - `deploy/` — `sftp_upload.py` (deploy), `ssh_recon.py`, `README.md`, `notes.local.md` (gitignored).
 - `docs/superpowers/specs|plans/` — the full design spec + every implementation plan (good history).
 - `.github/workflows/hourly.yml` — the hourly engine + push.
@@ -84,14 +90,20 @@ python -m http.server 8080 --directory out           # local preview at localhos
 - ANTHROPIC model id: `claude-sonnet-4-6` (in `llm.py`). Prompt caching is on.
 
 ## Status & known limitations (as of 2026-06-03)
-- LIVE and self-updating hourly. 94 Python + 27 web tests green.
-- Chart looks flat + scorecard says "insufficient data" because the track record is brand new — both
-  fill in over hours/days; the 1-year row stays "insufficient" for ~a year by design.
-- **TODO (housekeeping):** rotate the cPanel password (was shared in chat) and update the `SFTP_PASS`
-  GitHub secret. SSL cert expires **2026-12-18** (renew before then).
+- LIVE and self-updating hourly. ~130 Python + ~52 web tests green. Homepage at `vadym.online` root.
+- **Shipped beyond the original MVP** (improvement roadmap in `docs/IMPROVEMENT-ROADMAP.md`):
+  Phase A reliability (multi-source price failover, keep-alive workflow, healthcheck hook, db artifact
+  backup, stale banner); Phase B methodology (GJR-GARCH, regime, Deribit DVOL); Phase C scoring
+  (CRPS/CRPSS, Brier decomposition, rolling windows, overlay-vs-baseline A/B, Polymarket feed);
+  Phase D dashboard (markets/skill panels, your-call game, About page) + homepage.
+- Scorecard/skill/"did it call it" panels show "insufficient data" because the track record is brand new
+  — they fill in as forecasts mature (1-year stays "insufficient" for ~a year, by design).
+- **Still open / TODO:** rotate the cPanel password (was shared in chat) then update the `SFTP_PASS`
+  GitHub secret; optional `HC_PING_URL` healthchecks.io secret; SSL cert expires **2026-12-18**.
+  Roadmap items NOT yet built: HAR intraday-realized-variance vol, multi-asset (ETH/SOL), engine-rendered
+  OG share images + RSS feed, a Telegram channel.
 
 ## Process note
-This was built with the `superpowers` skill workflow (brainstorm → spec → plan → subagent-driven TDD).
-The specs/plans in `docs/superpowers/` document every decision and are the best place to understand
-*why* things are the way they are. Phase-2 ideas (GARCH vol, CRPS/calibration scoring, paid news API)
-are noted in the spec but intentionally deferred.
+Built with the `superpowers` skill workflow (brainstorm → spec → plan → subagent-driven TDD), then
+extended via a research-backed roadmap. The specs/plans in `docs/superpowers/` and `docs/IMPROVEMENT-ROADMAP.md`
+document every decision — the best place to understand *why* things are the way they are.
