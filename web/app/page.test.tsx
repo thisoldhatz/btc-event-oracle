@@ -13,6 +13,8 @@ vi.mock("@/lib/data", () => ({
       ],
       signals: [{ source: "fng", signal: "fear_greed", value: 11, delta: -12, interpretation: "Extreme Fear", observed_at: "" }],
       news: [{ title: "Bitmine ETH loss widens", url: "https://x.com/a", source: "CoinDesk", published_at: "2026-06-03T20:00:00+00:00" }],
+      regime: { label: "elevated", percentile: 0.7 },
+      markets: [{ question: "Will Bitcoin be above $62,000 on June 4?", yes_prob: 0.58, end_date: "x" }],
     },
     history: { "1w": [], "1m": [], "1y": [] },
     scores: { "1w": { n: 0 }, "1m": { n: 0 }, "1y": { n: 0 } },
@@ -32,5 +34,9 @@ describe("Dashboard page", () => {
     expect(screen.getByText(/How the model changed its mind/i)).toBeInTheDocument();
     expect(screen.getByText(/Did it call it/i)).toBeInTheDocument();
     expect(screen.getAllByText(/insufficient data/i).length).toBe(3);
+    expect(screen.getByText(/real-money markets imply/i)).toBeInTheDocument();
+    expect(screen.getByText(/calibration & skill/i)).toBeInTheDocument();
+    expect(screen.getByText(/your call vs\. the model/i)).toBeInTheDocument();
+    expect(screen.getByText(/intervals modestly widened/i)).toBeInTheDocument();   // regime note
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { sortForecasts, relativeTime } from "@/lib/format";
+import { sortForecasts, relativeTime, regimeNote } from "@/lib/format";
 import { useLiveData, useLivePrice } from "@/lib/hooks";
 import { Header } from "@/components/Header";
 import { SignalsStrip } from "@/components/SignalsStrip";
@@ -14,6 +14,9 @@ import { RecentCalls } from "@/components/RecentCalls";
 import { MindTimeline } from "@/components/MindTimeline";
 import { NewsFeed } from "@/components/NewsFeed";
 import { Disclaimer } from "@/components/Disclaimer";
+import { MarketsPanel } from "@/components/MarketsPanel";
+import { SkillPanel } from "@/components/SkillPanel";
+import { YourCall } from "@/components/YourCall";
 
 export default function Page() {
   const { latest, history, scores, extras, error, updatedAt } = useLiveData(60_000);
@@ -39,6 +42,12 @@ export default function Page() {
       {latest?.run_at && now - Date.parse(latest.run_at) > 90 * 60 * 1000 && (
         <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-300">
           ⚠ Heads up — data may be stale: the last forecast update was {relativeTime(latest.run_at, now)} (it normally refreshes hourly).
+        </div>
+      )}
+
+      {latest?.regime && regimeNote(latest.regime.label) && (
+        <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2 text-xs text-amber-200/80">
+          ⚠ {regimeNote(latest.regime.label)}
         </div>
       )}
 
@@ -75,9 +84,12 @@ export default function Page() {
           <section className="mt-4 grid gap-4 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-4">
               {scores && <Scorecard scores={scores} />}
+              {scores && <SkillPanel scores={scores} />}
               {extras && <RecentCalls results={extras.results} />}
             </div>
             <div className="space-y-4">
+              <MarketsPanel markets={latest.markets ?? []} />
+              <YourCall spot={price ?? latest.spot} modelPup={sortForecasts(latest.forecasts).find((f) => f.horizon === "1w")?.p_up ?? null} />
               {extras && <MindTimeline timeline={extras.timeline} />}
               <NewsFeed news={latest.news ?? []} />
             </div>
