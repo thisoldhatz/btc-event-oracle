@@ -1,7 +1,31 @@
 # STATUS — BTC Event Oracle (resume-here snapshot)
 
-_Last updated: 2026-06-03. For full reference see **CLAUDE.md** (auto-loads in a Claude Code session here).
-For the research-backed improvement plan see **docs/IMPROVEMENT-ROADMAP.md**._
+_Last updated: 2026-06-04. For full reference see **CLAUDE.md** (auto-loads in a Claude Code session here).
+Plans: **docs/IMPROVEMENT-ROADMAP.md** (research), **docs/NEXT-IMPROVEMENTS.md** (code-grounded audit),
+**docs/REDESIGN-SPEC.md** (the editorial redesign), **docs/MONEY-AND-GROWTH-PLAN.md**, **docs/CLOUDFLARE-MIGRATION.md**._
+
+## ⚠️ 2026-06-04 session — committed locally, NOT yet pushed/deployed
+Seven commits are on local `main` but **not pushed** (a safety gate blocks Claude from pushing to a
+production-deploying branch). **To ship everything: `git push origin main`** — the hourly workflow
+deploys the engine changes and `deploy-web.yml` builds+SFTPs the redesigned dashboard. What's in them:
+- **Firewall fix** (`35066d0`): the dashboard's 60s/4-file cache-busted polling tripped the host firewall
+  into IP-banning visitors (the `Unexpected token '<'` error). Now 5-min polling, pause-when-hidden,
+  backoff, latest-only fetch + a friendly block message. Added `deploy-web.yml`.
+- **Bundle A data-integrity** (`2603c08`): partial-candle upsert (was freezing the day's close → poisoned
+  vol + scoring), spot sanity bounds, backfill guard, GJR-GARCH persistence guard (no more blown-out 1y
+  band), durable-db-before-SFTP, BSS/CRPSS falsy-guard, skip empty runs, order windows by target_at.
+- **Calibration emit + OKX fix** (`962cebd`): engine now emits per-bin reliability + a real PIT histogram
+  + uniformity stat; OKX funding `observed_at` fixed (was a future timestamp).
+- **Editorial "Ledger" redesign** (`f7ec972`,`08fccb5`): full dark editorial-data-viz redesign — sticky
+  Masthead + 4 Acts; ProbabilityFan hero (band > number); range-first triptych; ForecastChart with a
+  random-walk reference line; **reliability diagram + PIT histogram charts**; model-vs-Polymarket
+  dumbbell; zero-axis skill bars surfacing the CRPS verdict; accessible InfoDots; Fraunces/Inter/Plex
+  Mono. (Replaced HorizonCard.)
+- **Signal staleness** (`f4…`): a "stale Xh" marker per signal past its freshness budget.
+- **Tests/build:** 139 pytest + 54 vitest green; `npm run build` green.
+- **Deferred (in docs/NEXT-IMPROVEMENTS.md):** Polymarket head-to-head *resolution scoring* (the dumbbell
+  shows live quotes now; full Brier-vs-market fills in once markets resolve), a Diebold-Mariano
+  significance test, funding/OI delta, skew_adj removal, an optional wider 80/90% band.
 
 ## Resume in 30 seconds
 - **The site is LIVE and self-updating hourly** — nothing is broken, nothing is mid-flight, all tests pass.
