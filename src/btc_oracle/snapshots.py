@@ -131,6 +131,22 @@ def _calibration(rows, rel_bins=10, pit_bins=10):
             "pit_n": len(pits), "pit_chi2": pit_chi2}
 
 
+def _significance(rows):
+    """Diebold-Mariano (Newey-West HAC) vs the random walk on the Brier and CRPS
+    loss differentials, gated on N so we never claim skill from a tiny sample."""
+    from .significance import diebold_mariano
+    out = {}
+    bm = [(r["brier"], r["brier_base"]) for r in rows
+          if r["brier"] is not None and r["brier_base"] is not None]
+    if len(bm) >= 10:
+        out["brier"] = diebold_mariano([x[0] for x in bm], [x[1] for x in bm])
+    cm = [(r["crps"], r["crps_rw"]) for r in rows
+          if r["crps"] is not None and r["crps_rw"] is not None]
+    if len(cm) >= 10:
+        out["crps"] = diebold_mariano([x[0] for x in cm], [x[1] for x in cm])
+    return out
+
+
 def _ab(rows):
     """Overlay (applied) vs baseline (pre-LLM) on Brier + CRPS, using stored baseline_* fields."""
     n = len(rows)
@@ -163,6 +179,7 @@ def build_scores(conn) -> dict:
         agg.update({
             "reliability": rel, "resolution": res, "uncertainty": unc,
             "calibration": _calibration(rows),
+            "significance": _significance(rows),
             "windows": {"all": _window(rows), "last30": _window(rows[:30]), "last90": _window(rows[:90])},
             "ab": _ab(rows),
         })

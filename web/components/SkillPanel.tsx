@@ -117,6 +117,19 @@ function coinVerdict(s: ScoreH): VerdictView | null {
   return { glyph: "≈", text: "≈ coin-flip", cls: "text-muted" };
 }
 
+/** The honest headline: a Diebold-Mariano (HAC) test that defaults to "no
+ *  significant difference" and only claims skill once it clears p<0.05. */
+function dmVerdict(s: ScoreH): { text: string; cls: string } | null {
+  const dm = s.significance?.crps ?? s.significance?.brier;
+  if (!dm) return null;
+  if (dm.significant) {
+    return dm.favors === "model"
+      ? { text: `significantly beats the random walk (p=${dm.p_value.toFixed(3)}, N=${dm.n})`, cls: "text-up" }
+      : { text: `significantly worse than the random walk (p=${dm.p_value.toFixed(3)}, N=${dm.n})`, cls: "text-down" };
+  }
+  return { text: `no significant difference from the random walk yet (p=${dm.p_value.toFixed(2)}, N=${dm.n})`, cls: "text-faint" };
+}
+
 function Header({ label, hint }: { label: string; hint: string }) {
   return (
     <div className="font-mono text-[10px] uppercase tracking-wide text-faint">
@@ -238,6 +251,26 @@ export function SkillPanel({ scores }: { scores: Scores }) {
                       · direction <span className={coin.cls}><span aria-hidden>{coin.glyph}</span> {coin.text}</span>
                     </span>
                   )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* The proper significance test — defaults to "not significant", N-gated. */}
+          <div className="mt-4 space-y-2 border-t border-keyline pt-4">
+            <div className="font-mono text-[10px] uppercase tracking-wide text-faint">
+              Beats the random walk?
+              <InfoDot text="A Diebold-Mariano test with a Newey-West HAC variance (which corrects for the heavy overlap between hourly forecasts) on the CRPS loss differential. It defaults to 'no significant difference' and only claims skill once the evidence clears p<0.05 — the honest, anti-overclaiming bar. Needs ~10+ resolved calls." />
+            </div>
+            {rows.map((r) => {
+              if (!r.hasData) return null;
+              const dm = dmVerdict(r.s);
+              return (
+                <div key={r.horizon} className="flex flex-wrap items-baseline gap-x-2 font-mono text-xs">
+                  <span className="w-16 shrink-0 text-muted">{r.label}</span>
+                  <span className={dm ? dm.cls : "text-faint"}>
+                    {dm ? dm.text : "test pending — need ≥10 resolved calls"}
+                  </span>
                 </div>
               );
             })}

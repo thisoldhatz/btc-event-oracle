@@ -50,6 +50,16 @@ export interface ScoreH {
   windows?: Record<"all" | "last30" | "last90", Partial<ScoreH>>;
   ab?: { n: number; model_brier?: number | null; baseline_brier?: number | null; model_crps?: number | null; baseline_crps?: number | null };
   calibration?: Calibration;
+  significance?: { brier?: DMResult | null; crps?: DMResult | null };
+}
+export interface DMResult {
+  dm: number;
+  p_value: number;
+  n: number;
+  mean_diff: number;
+  lag: number;
+  favors: string;
+  significant: boolean;
 }
 export interface Calibration {
   reliability: { p: number; o: number; n: number }[];
